@@ -56,4 +56,7 @@ typings/
 
 # dotenv environment variables file
 .env
+.examples
 
+# Google
+client_secret.json
