@@ -2,7 +2,7 @@
   "name": "slack-drive",
   "version": "0.0.1",
   "description": "Sync Slack channels to Google Drive",
-  "main": "app.js",
+  "main": "index.js",
   "dependencies": {
     "@slack/client": "^4.2.0",
     "googleapis": "^29.0.0"

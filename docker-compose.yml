@@ -1,0 +1,7 @@
+version: '3'
+services:
+  functions:
+    build: .
+    image: slackdrive
+    volumes:
+      - .:/slack-drive
