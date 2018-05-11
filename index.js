@@ -190,20 +190,20 @@ function verifyToken(body) {
 function slackErrorMessage(error) {
   let msg = JSON.parse(JSON.stringify(config.slack_message_template));
   try {
-    msg.attachments.map(function(x) {
-      x.fields[0].title = error.name;
-      x.fields[0].value = error.message;
-      x.text = '```\n' + e.stack + '\n```';
-      x.ts = new Date()/1000;
-    });
+    msg.attachments[0].fields[0].value = error.name;
+    msg.attachments[0].fields[1].value = error.message;
+    msg.attachments[0].fields[2].value = '```\n' + error.stack + '\n```';
+    msg.attachments[0].ts = new Date()/1000;
   }
   catch(e) {
-    msg.attachments = [{
-      color: "danger",
-      text: "```\n" + error + "\n```",
-      footer: "Slack | Google Drive Sync",
-      ts: new Date()/1000
-    }];
+    msg.attachments = [
+      {
+        color: "danger",
+        text: "```\n" + error + "\n```",
+        footer: "Slack | Google Drive Sync",
+        ts: new Date()/1000
+      }
+    ];
   }
   return msg;
 }

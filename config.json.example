@@ -9,13 +9,25 @@
         "color": "danger",
         "title": "Documentation",
         "title_link": "https://github.com/amancevice/slack-drive",
+        "mrkdwn_in": ["fields"],
         "fields": [
           {
-            "title": "[Error Class]",
-            "value": "[Error Message]"
+            "title": "Error",
+            "value": "[Error Message]",
+            "short": true
+          },
+          {
+            "title": "Message",
+            "value": "[Error Message]",
+            "short": true
+          },
+          {
+            "title": "Stack",
+            "value": "```\n[Stack]\n```"
           }
         ],
-        "footer": "Slack | Google Drive"
+        "footer": "Slack | Google Drive",
+        "ts": "[timestamp]"
       }
     ]
   }
