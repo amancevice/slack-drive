@@ -1,0 +1,28 @@
+{
+  "slack_api_token": "<web-token>",
+  "slack_verification_token": "<verification-token>",
+  "slack_message_template": {
+    "channel": "CAJEHPDNU",
+    "text": ":boom: Uh oh, something went wrong :boom:",
+    "attachments": [
+      {
+        "color": "danger",
+        "title": "Documentation",
+        "title_link": "https://github.com/amancevice/slack-drive",
+        "fields": [
+          {
+            "title": "Error",
+            "value": "[Error Class]",
+            "short": true
+          },
+          {
+            "title": "Message",
+            "value": "[Error Message]",
+            "short": true
+          }
+        ],
+        "footer": "Slack | Google Drive Sync"
+      }
+    ]
+  }
+}
