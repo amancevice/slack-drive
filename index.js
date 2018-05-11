@@ -191,8 +191,9 @@ function slackErrorMessage(error) {
   let msg = JSON.parse(JSON.stringify(config.slack_message_template));
   try {
     msg.attachments.map(function(x) {
-      x.fields[0].value = error.name;
-      x.fields[1].value = error.message;
+      x.fields[0].title = error.name;
+      x.fields[0].value = error.message;
+      x.text = '```\n' + e.stack + '\n```';
       x.ts = new Date()/1000;
     });
   }

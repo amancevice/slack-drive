@@ -2,7 +2,7 @@
   "slack_api_token": "<web-token>",
   "slack_verification_token": "<verification-token>",
   "slack_message_template": {
-    "channel": "CAJEHPDNU",
+    "channel": "<channel-id>",
     "text": ":boom: Uh oh, something went wrong :boom:",
     "attachments": [
       {
@@ -11,14 +11,8 @@
         "title_link": "https://github.com/amancevice/slack-drive",
         "fields": [
           {
-            "title": "Error",
-            "value": "[Error Class]",
-            "short": true
-          },
-          {
-            "title": "Message",
-            "value": "[Error Message]",
-            "short": true
+            "title": "[Error Class]",
+            "value": "[Error Message]"
           }
         ],
         "footer": "Slack | Google Drive"
