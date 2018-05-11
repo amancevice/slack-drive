@@ -70,6 +70,23 @@ function handleChannelRename(slackEvent) {
 }
 
 /**
+ * Handle group_rename
+ *
+ * @param {object}  slackEvent                         The Slack event object
+ * @param {string}  slackEvent.type                    Event type
+ * @param {object}  slackEvent.channel                 Channel object
+ * @param {string}  slackEvent.channel.id              Channel ID
+ * @param {boolean} slackEvent.channel.is_channel      Is channel
+ * @param {string}  slackEvent.channel.name            Channel name
+ * @param {string}  slackEvent.channel.name_normalized Normalized channel name
+ * @param {number}  slackEvent.channel.created         Created timestamp
+ * @param {string}  slackEvent.event_ts                Event timestamp
+ */
+function handleGroupRename(slackEvent) {
+  return slackEvent;
+}
+
+/**
  * Handle member_left_channel
  *
  * @param {object} slackEvent              The Slack event object
@@ -124,6 +141,9 @@ function handleEvent(slackEvent) {
     else if (slackEvent.type === 'channel_rename') {
       resolve(handleChannelRename(slackEvent));
     }
+    else if (slackEvent.type === 'group_rename') {
+      resolve(handleGroupRename(slackEvent));
+    }
     else if (slackEvent.type === 'member_left_channel') {
       resolve(handleMemberLeftChannel(slackEvent));
     }
@@ -168,7 +188,7 @@ function verifyToken(body) {
  * @param {object} error Error object
  */
 function slackErrorMessage(error) {
-  let msg = config.slack_message_template;
+  let msg = JSON.parse(JSON.stringify(config.slack_message_template));
   try {
     msg.attachments.map(function(x) {
       x.fields[0].value = error.name;
