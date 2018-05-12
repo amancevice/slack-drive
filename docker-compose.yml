@@ -4,4 +4,8 @@ services:
     build: .
     image: slackdrive
     volumes:
-      - .:/slack-drive
+      - ./index.js:/slack-drive/index.js
+      - ./package.json:/slack-drive/package.json
+      - ./config.json:/slack-drive/config.json
+      - ./client_secret.json:/etc/cloud/client_secret.json
+      - ./dist:/var/data

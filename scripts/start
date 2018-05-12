@@ -1,0 +1,7 @@
+#!/bin/bash
+
+echo ${PROJECT_ID} | functions start
+functions deploy publishEvent --trigger-http
+functions deploy consumeEvent --trigger-topic=${PUBSUB_TOPIC}
+rm /var/data/*
+cp /tmp/*.zip /var/data

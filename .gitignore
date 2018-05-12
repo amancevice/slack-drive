@@ -63,3 +63,6 @@ config.json
 
 # Google
 client_secret.json
+
+# Dist
+dist/

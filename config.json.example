@@ -1,34 +1,40 @@
 {
-  "slack_api_token": "<web-token>",
-  "slack_verification_token": "<verification-token>",
-  "slack_message_template": {
-    "channel": "<channel-id>",
-    "text": ":boom: Uh oh, something went wrong :boom:",
-    "attachments": [
-      {
-        "color": "danger",
-        "title": "Documentation",
-        "title_link": "https://github.com/amancevice/slack-drive",
-        "mrkdwn_in": ["fields"],
-        "fields": [
-          {
-            "title": "Error",
-            "value": "[Error Message]",
-            "short": true
-          },
-          {
-            "title": "Message",
-            "value": "[Error Message]",
-            "short": true
-          },
-          {
-            "title": "Stack",
-            "value": "```\n[Stack]\n```"
-          }
-        ],
-        "footer": "Slack | Google Drive",
-        "ts": "[timestamp]"
-      }
-    ]
+  "cloud": {
+    "project_id": "<project-id>",
+    "pubsub_topic": "<topic>"
+  },
+  "slack": {
+    "api_token": "<api-token>",
+    "verification_token": "<verification-token>",
+    "message_template": {
+      "channel": "<channel-id>",
+      "text": ":boom: Uh oh, something went wrong :boom:",
+      "attachments": [
+        {
+          "color": "danger",
+          "title": "Documentation",
+          "title_link": "https://github.com/amancevice/slack-drive",
+          "mrkdwn_in": ["fields"],
+          "fields": [
+            {
+              "title": "Error",
+              "value": "[Error Message]",
+              "short": true
+            },
+            {
+              "title": "Message",
+              "value": "[Error Message]",
+              "short": true
+            },
+            {
+              "title": "Stack",
+              "value": "```\n[Stack]\n```"
+            }
+          ],
+          "footer": "Slack | Google Drive",
+          "ts": "[timestamp]"
+        }
+      ]
+    }
   }
 }
