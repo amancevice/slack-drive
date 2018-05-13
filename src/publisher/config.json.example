@@ -1,0 +1,9 @@
+{
+  "cloud": {
+    "project_id": "<project-id>",
+    "pubsub_topic": "<topic-name>"
+  },
+  "slack": {
+    "verification_token": "<verification-token>"
+  }
+}

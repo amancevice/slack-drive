@@ -1,16 +1,13 @@
 {
-  "name": "slack-drive",
+  "name": "slack-drive-event-publisher",
   "version": "0.0.1",
-  "description": "Sync Slack channels to Google Drive",
+  "description": "Publish Slack events to a PubSub topic",
   "main": "index.js",
   "dependencies": {
-    "@google-cloud/pubsub": "^0.18.0",
-    "@slack/client": "^4.2.0",
     "googleapis": "^29.0.0"
   },
   "devDependencies": {},
   "scripts": {
-    "start": "scripts/start.sh",
     "test": "TODO"
   },
   "repository": {
