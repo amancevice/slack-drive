@@ -1,4 +1,4 @@
 #!/bin/bash
 
 echo ${PROJECT_ID} | functions start
-$1
+$@

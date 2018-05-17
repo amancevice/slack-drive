@@ -1,9 +1,0 @@
-#!/bin/bash
-
-for file in $(ls .examples/); do
-  echo -e "\033[0;34m${file}\033[0m"
-  functions call publishEvent --file .examples/${file}
-  functions logs read
-  functions logs clear
-  echo
-done
