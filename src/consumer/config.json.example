@@ -4,9 +4,7 @@
     "pubsub_topic": "<topic>"
   },
   "slack": {
-    "api_token": "<api-token>",
-    "verification_token": "<verification-token>",
-    "message_template": {
+    "error_message_template": {
       "channel": "<channel-id>",
       "text": ":boom: Uh oh, something went wrong :boom:",
       "attachments": [
@@ -16,6 +14,10 @@
           "title_link": "https://github.com/amancevice/slack-drive",
           "mrkdwn_in": ["fields"],
           "fields": [
+            {
+              "title": "Event",
+              "value": "[Event]"
+            },
             {
               "title": "Error",
               "value": "[Error Message]",
@@ -29,6 +31,26 @@
             {
               "title": "Stack",
               "value": "```\n[Stack]\n```"
+            }
+          ],
+          "footer": "Slack | Google Drive",
+          "ts": "[timestamp]"
+        }
+      ]
+    },
+    "success_message_template": {
+      "channel": "<channel-id>",
+      "text": ":sparkles: A new event has been published :sparkles:",
+      "attachments": [
+        {
+          "color": "good",
+          "title": "Documentation",
+          "title_link": "https://github.com/amancevice/slack-drive",
+          "mrkdwn_in": ["fields"],
+          "fields": [
+            {
+              "title": "Event",
+              "value": "[Error Message]"
             }
           ],
           "footer": "Slack | Google Drive",

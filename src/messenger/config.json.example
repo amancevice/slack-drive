@@ -1,0 +1,33 @@
+{
+  "slack": {
+    "api_token": "<web-api-token>",
+    "error_message_template": {
+      "channel": "<channel-id>",
+      "text": ":boom: Uh oh, something went wrong :boom:",
+      "attachments": [
+        {
+          "color": "danger",
+          "title": "Documentation",
+          "title_link": "https://github.com/amancevice/slack-drive",
+          "mrkdwn_in": ["fields"],
+          "fields": [
+            {
+              "title": "[Error Name]",
+              "value": "[Error Message]"
+            },
+            {
+              "title": "Stack",
+              "value": "```\n[Stack]\n```"
+            },
+            {
+              "title": "Event",
+              "value": "[Event]"
+            }
+          ],
+          "footer": "Slack | Google Drive",
+          "ts": "[timestamp]"
+        }
+      ]
+    }
+  }
+}
