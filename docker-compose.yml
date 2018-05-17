@@ -2,6 +2,6 @@ version: '3'
 services:
   functions:
     build: .
-    image: functions
+    image: slackdrive
     volumes:
       - ./src:/src

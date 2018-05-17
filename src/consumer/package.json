@@ -1,28 +1,18 @@
 {
-  "name": "slack-drive-event-consumer",
+  "name": "slack-drive-consumer",
   "version": "0.0.1",
-  "description": "Publish Slack events to a PubSub topic",
+  "description": "Consume Slack events and sync with Google Drive",
   "main": "index.js",
   "dependencies": {
     "@google-cloud/pubsub": "^0.18.0",
     "googleapis": "^29.0.0"
   },
-  "devDependencies": {},
   "scripts": {
-    "test": "TODO"
+    "build": "node build.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/amancevice/slack-events.git"
+    "url": "git+https://github.com/amancevice/slack-drive.git"
   },
-  "keywords": [
-    "Slack",
-    "Google Drive"
-  ],
-  "author": "smallweirdnumber",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/amancevice/slack-events/issues"
-  },
-  "homepage": "https://github.com/amancevice/slack-events"
+  "license": "MIT"
 }

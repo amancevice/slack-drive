@@ -1,27 +1,17 @@
 {
-  "name": "slack-drive-event-publisher",
+  "name": "slack-drive-publisher",
   "version": "0.0.1",
   "description": "Publish Slack events to a PubSub topic",
   "main": "index.js",
   "dependencies": {
     "googleapis": "^29.0.0"
   },
-  "devDependencies": {},
   "scripts": {
-    "test": "TODO"
+    "build": "node build.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/amancevice/slack-events.git"
   },
-  "keywords": [
-    "Slack",
-    "Google Drive"
-  ],
-  "author": "smallweirdnumber",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/amancevice/slack-events/issues"
-  },
-  "homepage": "https://github.com/amancevice/slack-events"
+  "license": "MIT"
 }

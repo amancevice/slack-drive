@@ -6,22 +6,12 @@
   "dependencies": {
     "@slack/client": "^4.2.0"
   },
-  "devDependencies": {},
   "scripts": {
-    "test": "TODO"
+    "build": "node build.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/amancevice/slack-events.git"
+    "url": "git+https://github.com/amancevice/slack-drive.git"
   },
-  "keywords": [
-    "Slack",
-    "Google Drive"
-  ],
-  "author": "smallweirdnumber",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/amancevice/slack-events/issues"
-  },
-  "homepage": "https://github.com/amancevice/slack-events"
+  "license": "MIT"
 }
