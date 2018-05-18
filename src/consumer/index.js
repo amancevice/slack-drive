@@ -102,6 +102,7 @@ function getUser(event) {
 function publishEvent(event) {
   // Build message
   config.slack.success_message.attachments.map((x) => {
+    x.ts = event.event.event_ts;
     x.title = event.event.type.titlize();
     x.fields = [{short: true, title: 'Channel', value: `#${event.channel.name}`}];
     if (event.user) {
