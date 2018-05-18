@@ -5,6 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "@google-cloud/pubsub": "^0.18.0",
+    "@slack/client": "^4.2.0",
     "googleapis": "^29.0.0"
   },
   "scripts": {
