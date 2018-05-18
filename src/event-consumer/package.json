@@ -1,10 +1,11 @@
 {
-  "name": "slack-drive-messenger",
+  "name": "slack-drive-event-consumer",
   "version": "0.0.1",
-  "description": "Post Slack messages from a PubSub topic",
+  "description": "Consume Slack events and sync with Google Drive",
   "main": "index.js",
   "dependencies": {
-    "@slack/client": "^4.2.0"
+    "@slack/client": "^4.2.0",
+    "googleapis": "^29.0.0"
   },
   "scripts": {
     "build": "node build.js"

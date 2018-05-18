@@ -41,6 +41,7 @@
     },
     "success_message": {
       "channel": "<channel-id>",
+      "user": "<user-id>",
       "text": ":sparkles: A new event has been published :sparkles:",
       "attachments": [
         {

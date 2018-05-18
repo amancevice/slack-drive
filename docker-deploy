@@ -10,17 +10,12 @@ elif [ "$1" == "event-listener" ]; then
   npm install --save
   functions deploy publishEvent --trigger-http --timeout 3s
 
-elif [ "$1" == "consumer" ]; then
+elif [ "$1" == "event-consumer" ]; then
   cd $1
   npm install --save
   functions deploy consumeEvent --trigger-topic=${SLACK_EVENTS_TOPIC}
 
-elif [ "$1" == "messenger" ]; then
-  cd $1
-  npm install --save
-  functions deploy subscribe --trigger-topic=${SLACK_MESSAGES_TOPIC}
-
 else
-  echo "Usage: deploy [event-listener|consumer|messenger]"
+  echo "Usage: deploy [event-listener|event-consumer]"
   exit 1
 fi
