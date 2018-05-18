@@ -1,7 +1,7 @@
 {
   "slack": {
     "api_token": "<web-api-token>",
-    "error_message_template": {
+    "error_message": {
       "channel": "<channel-id>",
       "text": ":boom: Uh oh, something went wrong :boom:",
       "attachments": [

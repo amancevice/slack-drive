@@ -3,57 +3,59 @@ const config = require('./config.json');
 const slack = new WebClient(config.slack.api_token);
 
 /**
- *
- */
-function errorMessage(err, event) {
-  const msg = JSON.parse(JSON.stringify(config.slack.error_message_template));
-  try {
-    msg.attachments[0].ts = new Date()/1000;
-    msg.attachments[0].fields = [
-      {title: err.name, value: err.message},
-      {title: 'Stacktrace', value: `\`\`\`\n${err.stack}\n\`\`\``},
-      {title: 'Event', value: `\`\`\`\n${JSON.stringify(event)}\n\`\`\``}
-    ];
-  }
-  catch(err) {
-    msg.attachments = [
-      {
-        color: 'danger',
-        fields: [
-          {title: 'Error', value: `\`\`\`\n${err}\n\`\`\``},
-          {title: 'Event', value: `\`\`\`\n${JSON.stringify(event)}\n\`\`\``}
-        ],
-        footer: 'Slack | Google Drive Sync',
-        ts: new Date()/1000
-      }
-    ];
-  }
-  return msg;
-}
-
-/**
- * Post message to Slack.
- *
- * @param {object} msg Slack message object.
- * @param {string} msg.channel Slack channel ID.
- * @param {string} msg.text Slack message text.
- * @param {array} msg.attachments Slack message attachments.
- */
-function postMessage(msg) {
-  slack.chat.postMessage(msg)
-    .then((res) => console.log)
-    .catch((err) => console.error);
-}
-
-/**
- * Parse Base64-encoded PubSub message.
+ * Base64-decode PubSub message.
  *
  * @param {object} event           Cloud Functions event.
  * @param {object} event.data      PubSub message.
  * @param {object} event.data.data Base64-encoded message data.
  */
-function pubSubMessage(event) {
-  return JSON.parse(Buffer.from(event.data.data, 'base64').toString());
+function decodeEvent(event) {
+  return new Promise((resolve, reject) => {
+    try {
+      resolve(JSON.parse(Buffer.from(event.data.data, 'base64').toString()));
+    } catch(err) {
+      reject(err);
+    }
+  });
+}
+
+/**
+ * Post message to Slack.
+ *
+ * @param {object} event Slack message payload.
+ * @param {object} event.method Slack chat method (postMessage/postEphemeral).
+ * @param {object} event.message Slack message object.
+ */
+function postMessage(event) {
+  console.log(event);
+  return slack.chat[event.method](event.message)
+    .then(console.log)
+    .catch((err) => {
+      console.error(err);
+      err.event = event
+      throw err;
+    });
+}
+
+/**
+ * Post message to Slack.
+ *
+ * @param {object} err Error object.
+ * @param {string} err.name Error name.
+ * @param {string} err.message Error message.
+ * @param {string} err.stack Error stacktrace.
+ * @param {object} err.event Event that threw error.
+ */
+function postError(err) {
+  config.slack.error_message.attachments.map((x) => {
+    x.ts = new Date()/1000;
+    x.fields = [
+      {title: err.name, value: err.message},
+      {title: 'Stacktrace', value: `\`\`\`${err.stack}\`\`\``},
+      {title: 'Event', value: `\`\`\`${JSON.stringify(err.event)}\`\`\``}
+    ];
+  });
+  return slack.chat.postMessage(config.slack.error_message).catch(console.error);
 }
 
 /**
@@ -63,13 +65,9 @@ function pubSubMessage(event) {
  * @param {function} callback Callback function.
  */
 exports.subscribe = (event, callback) => {
-  try {
-    postMessage(pubSubMessage(event));
-  }
-  catch(err) {
-    postMessage(errorMessage(err, event));
-  }
-  finally {
-    callback();
-  }
+  Promise.resolve(event)
+    .then(decodeEvent)
+    .then(postMessage)
+    .catch(postError);
+  callback();
 }
