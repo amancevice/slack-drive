@@ -1,14 +1,14 @@
 #!/bin/bash
 
 if [ $# -eq 0 ]; then
-  deploy publisher
+  deploy event-listener
   deploy consumer
   deploy messenger
 
-elif [ "$1" == "publisher" ]; then
+elif [ "$1" == "event-listener" ]; then
   cd $1
   npm install --save
-  functions deploy publishEvent --trigger-http
+  functions deploy publishEvent --trigger-http --timeout 3s
 
 elif [ "$1" == "consumer" ]; then
   cd $1
@@ -21,6 +21,6 @@ elif [ "$1" == "messenger" ]; then
   functions deploy subscribe --trigger-topic=${SLACK_MESSAGES_TOPIC}
 
 else
-  echo "Usage: deploy [publisher|consumer|messenger]"
+  echo "Usage: deploy [event-listener|consumer|messenger]"
   exit 1
 fi
