@@ -1,10 +1,52 @@
 {
   "cloud": {
     "project_id": "<project-id>",
-    "pubsub_topic": "<topic>"
+    "firebase_ref": "<firebase-rtdb-ref>"
   },
   "slack": {
     "api_token": "<web-api-token>",
+    "member_joined_channel": {
+      "text": ":sparkles: Welcome to #channel :sparkles:",
+      "attachments": [
+        {
+          "color": "good",
+          "text": "This channel has its own private Google Drive folder.\n\nOnly members of the channel can view its contents.\n\nInvite other members into this channel to give them access!",
+          "mrkdwn_in": [
+            "text"
+          ],
+          "actions": [
+            {
+              "type": "button",
+              "text": "Google Drive",
+              "url": "https://drive.google.com"
+            }
+          ]
+        },
+        {
+          "color": "warning",
+          "text": "*DO NOT SHARE FILES BY LINK IN THIS FOLDER!*\n\nType `/dsa drive` to view this message again.",
+          "mrkdwn_in": [
+            "text"
+          ],
+          "footer": "Slack | Google Drive",
+          "ts": "1234567890"
+        }
+      ]
+    },
+    "member_left_channel": {
+      "text": "Goodbye from #channel :wave:",
+      "attachments": [
+        {
+          "color": "warning",
+          "text": " You will lose access to this channel's Google Drive folder soon.\n\nRe-join the channel to gain access again.",
+          "mrkdwn_in": [
+            "text"
+          ],
+          "footer": "Slack | Google Drive",
+          "ts": "1234567890"
+        }
+      ]
+    },
     "error_message": {
       "channel": "<channel-id>",
       "text": ":boom: Uh oh, something went wrong :boom:",
@@ -41,7 +83,6 @@
     },
     "success_message": {
       "channel": "<channel-id>",
-      "user": "<user-id>",
       "text": ":sparkles: A new event has been published :sparkles:",
       "attachments": [
         {
