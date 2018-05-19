@@ -1,6 +1,5 @@
 const clientSecret = require('./client_secret.json');
 const config = require('./config.json');
-const firebase = require('firebase-admin');
 const { WebClient } = require('@slack/client');
 const { google } = require('googleapis');
 const slack = new WebClient(config.slack.api_token);
@@ -11,10 +10,6 @@ const jwt = new google.auth.JWT(
   null,
   ['https://www.googleapis.com/auth/drive']);
 const drive = google.drive({version: 'v3', auth: jwt});
-firebase.initializeApp({
-  credential: firebase.credential.cert(clientSecret),
-  databaseURL: `https://${config.cloud.project_id}.firebaseio.com`
-});
 
 String.prototype.titlize = function() {
   return this.replace(/_/g, ' ').split(/ /).map((x) => {
@@ -50,48 +45,19 @@ function decodeEvent(e) {
 }
 
 /**
- * Get processed status of event.
- *
- * @param {object} e Slack event object message.
- * @param {object} e.event Slack event object.
- */
-function getProcessed(e) {
-  return firebase.database()
-    .ref(`${config.cloud.firebase_ref}/${e.event_id}`)
-    .once('value')
-    .then((res) => {
-      if (res.val() !== null) {
-        console.log(`ALREADY PROCESSED ${e.event_id}`);
-        e.processed = true;
-        return e;
-      } else {
-        console.log(`NEW EVENT ${e.event_id}`);
-        return e;
-      }
-    });
-}
-
-/**
  * Determine if work is to be done.
  *
  * @param {object} e Slack event object message.
  * @param {object} e.event Slack event object.
  */
 function processEvent(e) {
-  if (e.processed === true) {
-    console.log(`NO-OP ${e.event_id}`);
-    return Promise.resolve(e);
-  } else {
-    console.log(`PROCESSING ${e.event_id}`);
-    return Promise.resolve(e)
-      .then(getChannel)
-      .then(getUser)
-      .then(findOrCreateFolder)
-      .then(addPermission)
-      .then(postEphemeral)
-      .then(postMessage)
-      .then(finish);
-  }
+  return Promise.resolve(e)
+    .then(getChannel)
+    .then(getUser)
+    .then(findOrCreateFolder)
+    .then(addPermission)
+    .then(postEphemeral)
+    .then(postMessage);
 }
 
 /**
@@ -308,23 +274,6 @@ function postError(err, e) {
 }
 
 /**
- * Send event to Firebase to mark as processed.
- *
- * @param {object} e Slack event object message.
- * @param {object} e.event Slack event object.
- */
-function finish(e) {
-  return firebase.database()
-    .ref(`${config.cloud.firebase_ref}/${e.event_id}`)
-    .set({event_ts: e.event.event_ts})
-    .then(() => {
-      console.log(`PROCESSED ${e.event_id}`);
-      e.processed = true;
-      return e;
-    });
-}
-
-/**
  * Triggered from a message on a Cloud Pub/Sub topic.
  *
  * @param {object} event The Cloud Functions event.
@@ -334,7 +283,6 @@ exports.consumeEvent = (event, callback) => {
   Promise.resolve(event.data)
     .then(logEvent)
     .then(decodeEvent)
-    .then(getProcessed)
     .then(processEvent)
     .catch((err) => postError(err, event.data));
 

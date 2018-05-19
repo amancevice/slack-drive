@@ -1,7 +1,6 @@
 {
   "cloud": {
-    "project_id": "<project-id>",
-    "firebase_ref": "<firebase-rtdb-ref>"
+    "project_id": "<project-id>"
   },
   "slack": {
     "api_token": "<web-api-token>",

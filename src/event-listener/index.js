@@ -30,8 +30,14 @@ function verifyToken(req) {
 }
 
 function publishEvent(req) {
+
+  // Skip if this is a Slack retry event
+  // TODO there must be a better way to handle this...
+  if (req.headers['x-slack-retry-num'] !== undefined) {
+    return Promise.resolve(req);
+
   // Publish event to PubSub if it is an `event_callback`
-  if (req.body.type === 'event_callback') {
+  } else if (req.body.type === 'event_callback') {
     return pubsub.projects.topics.publish({
         topic: topic,
         resource: {
@@ -45,10 +51,11 @@ function publishEvent(req) {
         if (error) throw error;
         console.log(`PUBSUB ${JSON.stringify(response.data)}`);
       });
-  }
 
   // Otherwise, just resolve the event
-  return Promise.resolve(req);
+  } else {
+    return Promise.resolve(req);
+  }
 }
 
 exports.publishEvent = (req, res) => {
