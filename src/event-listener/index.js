@@ -6,6 +6,11 @@ const jwt = new google.auth.JWT(service.client_email, './client_secret.json', nu
 const pubsub = google.pubsub({version: 'v1', auth: jwt});
 const topic = `projects/${config.cloud.project_id}/topics/${config.cloud.pubsub_topic}`;
 
+/**
+ * Log event info.
+ *
+ * @param {object} req Cloud Function request context.
+ */
 function logEvent(req) {
   return Promise.resolve(req)
     .then((req) => {
@@ -15,6 +20,11 @@ function logEvent(req) {
     });
 }
 
+/**
+ * Verify request contains proper validation token.
+ *
+ * @param {object} req Cloud Function request context.
+ */
 function verifyToken(req) {
   return Promise.resolve(req)
     .then((req) => {
@@ -29,6 +39,11 @@ function verifyToken(req) {
     });
 }
 
+/**
+ * Publish event to PubSub topic (if it's not a retry).
+ *
+ * @param {object} req Cloud Function request context.
+ */
 function publishEvent(req) {
 
   // Skip if this is a Slack retry event
@@ -47,9 +62,10 @@ function publishEvent(req) {
             }
           ]
         }
-      }, (error, response) => {
-        if (error) throw error;
-        console.log(`PUBSUB ${JSON.stringify(response.data)}`);
+      })
+      .then((pub) => {
+        console.log(`PUBSUB ${JSON.stringify(pub.data)}`)
+        return req;
       });
 
   // Otherwise, just resolve the event
@@ -58,21 +74,43 @@ function publishEvent(req) {
   }
 }
 
+/**
+ * Send OK HTTP response back to requester.
+ *
+ * @param {object} req Cloud Function request context.
+ * @param {object} res Cloud Function response context.
+ */
+function sendResponse(req, res) {
+  if (req.body.type === 'url_verification') {
+    res.json({challenge: req.body.challenge});
+  } else {
+    res.send('OK');
+  }
+}
+
+/**
+ * Send Error HTTP response back to requester.
+ *
+ * @param {object} err The error object.
+ * @param {object} req Cloud Function request context.
+ */
+function sendError(err, res) {
+  console.error(err);
+  res.status(err.code || 500).send(err);
+  return Promise.reject(err);
+}
+
+/**
+ * Responds to any HTTP request that can provide a "message" field in the body.
+ *
+ * @param {object} req Cloud Function request context.
+ * @param {object} res Cloud Function response context.
+ */
 exports.publishEvent = (req, res) => {
   Promise.resolve(req)
     .then(logEvent)
     .then(verifyToken)
     .then(publishEvent)
-    .then((pub) => {
-      if (req.body.type === 'url_verification') {
-        res.json({challenge: req.body.challenge});
-      } else {
-        res.send('OK');
-      }
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(err.code || 500).send(err);
-      return Promise.reject(err);
-    });
+    .then((req) => sendResponse(req, res))
+    .catch((err) => sendError(err, res));
 }
