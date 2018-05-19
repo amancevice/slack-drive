@@ -4,11 +4,8 @@ const { WebClient } = require('@slack/client');
 const { google } = require('googleapis');
 const slack = new WebClient(config.slack.api_token);
 const mimeTypeFolder = 'application/vnd.google-apps.folder';
-const jwt = new google.auth.JWT(
-  clientSecret.client_email,
-  './client_secret.json',
-  null,
-  ['https://www.googleapis.com/auth/drive']);
+const scopes = ['https://www.googleapis.com/auth/drive'];
+const jwt = new google.auth.JWT(clientSecret.client_email, './client_secret.json', null, scopes);
 const drive = google.drive({version: 'v3', auth: jwt});
 
 String.prototype.titlize = function() {

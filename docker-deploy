@@ -2,8 +2,8 @@
 
 if [ $# -eq 0 ]; then
   deploy event-listener
-  deploy consumer
-  deploy messenger
+  deploy event-consumer
+  deploy slash-command
 
 elif [ "$1" == "event-listener" ]; then
   cd $1
@@ -15,7 +15,12 @@ elif [ "$1" == "event-consumer" ]; then
   npm install --save
   functions deploy consumeEvent --trigger-topic=${SLACK_EVENTS_TOPIC}
 
+elif [ "$1" == "slash-command" ]; then
+  cd $1
+  npm install --save
+  functions deploy slashCommand --trigger-http --timeout 3s
+
 else
-  echo "Usage: deploy [event-listener|event-consumer]"
+  echo "Usage: deploy [event-listener|event-consumer|slash-command]"
   exit 1
 fi
