@@ -6,11 +6,8 @@ const config = require('./config.json');
  * @param {object} req Cloud Function request context.
  */
 function logEvent(req) {
-  return Promise.resolve(req)
-    .then((req) => {
-      console.log(`HEADERS ${JSON.stringify(req.headers)}`);
-      return req;
-    });
+  console.log(`HEADERS ${JSON.stringify(req.headers)}`);
+  return req;
 }
 
 /**
@@ -19,17 +16,14 @@ function logEvent(req) {
  * @param {object} req Cloud Function request context.
  */
 function verifyToken(req) {
-  return Promise.resolve(req)
-    .then((req) => {
-      // Verify token
-      if (!req.body || req.body.token !== config.slack.verification_token) {
-        const error = new Error('Invalid Credentials');
-        error.code = 401;
-        throw error;
-      }
+  // Verify token
+  if (!req.body || req.body.token !== config.slack.verification_token) {
+    const error = new Error('Invalid Credentials');
+    error.code = 401;
+    throw error;
+  }
 
-      return req;
-    });
+  return req;
 }
 
 /**
@@ -38,32 +32,8 @@ function verifyToken(req) {
  * @param {object} req Cloud Function request context.
  */
 function verifyText(req) {
-  return Promise.resolve(req)
-    .then((req) => {
-      if (req.body.text === 'drive') return req;
-      throw new Error(`Unknown text: ${req.body.text}`);
-    });
-}
-
-/**
- * Publish event to PubSub topic (if it's not a retry).
- *
- * @param {object} req Cloud Function request context.
- */
-function getFolder(req) {
-  const service = require('./client_secret.json');
-  const { google } = require('googleapis');
-  const scopes = ['https://www.googleapis.com/auth/drive.readonly'];
-  const jwt = new google.auth.JWT(service.client_email, './client_secret.json', null, scopes);
-  const drive = google.drive({version: 'v3', auth: jwt});
-
-  return drive.files.list({
-      q: `appProperties has { key='channel' and value='${req.body.channel_id}' }`
-    })
-    .then((res) => {
-      res.data.files.map((x) => { req.folder = x; });
-      return req;
-    });
+  if (req.body.text === 'drive') return req;
+  throw new Error(`Unknown text: ${req.body.text}`);
 }
 
 /**
@@ -73,16 +43,10 @@ function getFolder(req) {
  * @param {object} res Cloud Function response context.
  */
 function sendResponse(req, res) {
-  config.slack.subcommands[req.body.text].message.attachments.slice(0, 1).map((a) => {
-    a.actions.map((b) => {
-      if (req.folder !== undefined) {
-        b.url = `https://drive.google.com/drive/u/0/folders/${req.folder.id}`;
-      } else {
-        b.url = 'https://drive.google.com/';
-      }
-    });
-  });
-  res.json(config.slack.subcommands[req.body.text].message);
+  config.slack.messages[req.body.text].attachments[0].actions[0].url = `${config.cloud.redirect}?channel=${req.body.channel_id}`;
+  config.slack.messages[req.body.text].attachments[1].ts = new Date()/1000;
+  console.log(JSON.stringify(config.slack.messages[req.body.text]));
+  res.json(config.slack.messages[req.body.text]);
 }
 
 /**
@@ -107,7 +71,6 @@ exports.slashCommand = (req, res) => {
     .then(logEvent)
     .then(verifyToken)
     .then(verifyText)
-    .then(getFolder)
     .then((req) => sendResponse(req, res))
     .catch((err) => sendError(err, res));
 }
