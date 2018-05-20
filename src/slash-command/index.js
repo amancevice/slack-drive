@@ -1,4 +1,6 @@
 const config = require('./config.json');
+const messages = require('./messages.json');
+const redirect = `https://${config.cloud.region}-${config.cloud.project_id}.cloudfunctions.net/${config.cloud.redirect}`;
 
 /**
  * Log event info.
@@ -43,10 +45,14 @@ function verifyText(req) {
  * @param {object} res Cloud Function response context.
  */
 function sendResponse(req, res) {
-  config.slack.messages[req.body.text].attachments[0].actions[0].url = `${config.cloud.redirect}?channel=${req.body.channel_id}`;
-  config.slack.messages[req.body.text].attachments[1].ts = new Date()/1000;
-  console.log(JSON.stringify(config.slack.messages[req.body.text]));
-  res.json(config.slack.messages[req.body.text]);
+  messages.attachments.drive_link.actions[0].url = `${redirect}?channel=${req.body.channel_id}`;
+  messages.attachments.drive_warning.ts = new Date()/1000;
+  res.json({
+    attachments: [
+      messages.attachments.drive_link,
+      messages.attachments.drive_warning,
+    ]
+  });
 }
 
 /**
@@ -57,7 +63,7 @@ function sendResponse(req, res) {
  */
 function sendError(err, res) {
   console.error(err);
-  res.json({text: ':thinking_face: Hmm, I don\'t know that command...'});
+  res.json({text: messages.texts.slash_error});
 }
 
 /**

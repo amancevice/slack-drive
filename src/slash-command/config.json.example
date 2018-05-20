@@ -1,0 +1,13 @@
+{
+  "cloud": {
+    "project_id": "<project-id>",
+    "region": "us-central1",
+    "redirect": "<redirect-function-name>",
+    "pubsub_topic": "<pubsub-topic>"
+  },
+  "slack": {
+    "api_token": "<web-api-token>",
+    "verification_token": "<verification-token>",
+    "slash_command": "<slash-command-name>"
+  }
+}
