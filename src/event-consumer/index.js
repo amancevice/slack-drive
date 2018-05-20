@@ -7,6 +7,7 @@ const mimeTypeFolder = 'application/vnd.google-apps.folder';
 const scopes = ['https://www.googleapis.com/auth/drive'];
 const jwt = new google.auth.JWT(clientSecret.client_email, './client_secret.json', null, scopes);
 const drive = google.drive({version: 'v3', auth: jwt});
+const red = '#f83a22';
 
 String.prototype.titlize = function() {
   return this.replace(/_/g, ' ').split(/ /).map((x) => {
@@ -131,6 +132,7 @@ function findOrCreateFolder(e) {
             resource: {
               name: `#${e.channel.name}`,
               mimeType: mimeTypeFolder,
+              folderColorRgb: red,
               appProperties: {
                 channel: e.channel.id
               }
