@@ -6,12 +6,9 @@ const config = require('./config.json')
  * @param {object} req Cloud Function request context.
  */
 function logEvent(req) {
-  return Promise.resolve(req)
-    .then((req) => {
-      console.log(`HEADERS ${JSON.stringify(req.headers)}`);
-      console.log(`EVENT ${JSON.stringify(req.body.event)}`);
-      return req;
-    });
+  console.log(`HEADERS ${JSON.stringify(req.headers)}`);
+  console.log(`EVENT ${JSON.stringify(req.body.event)}`);
+  return req;
 }
 
 /**
@@ -20,17 +17,14 @@ function logEvent(req) {
  * @param {object} req Cloud Function request context.
  */
 function verifyToken(req) {
-  return Promise.resolve(req)
-    .then((req) => {
-      // Verify token
-      if (!req.body || req.body.token !== config.slack.verification_token) {
-        const error = new Error('Invalid Credentials');
-        error.code = 401;
-        throw error;
-      }
+  // Verify token
+  if (!req.body || req.body.token !== config.slack.verification_token) {
+    const error = new Error('Invalid Credentials');
+    error.code = 401;
+    throw error;
+  }
 
-      return req;
-    });
+  return req;
 }
 
 /**
@@ -40,15 +34,12 @@ function verifyToken(req) {
  * @param {object} res Cloud Function response context.
  */
 function sendResponse(req, res) {
-  return Promise.resolve(req)
-    .then((req) => {
-      if (req.body.type === 'url_verification') {
-        res.json({challenge: req.body.challenge});
-      } else {
-        res.send('OK');
-      }
-      return req
-    });
+  if (req.body.type === 'url_verification') {
+    res.json({challenge: req.body.challenge});
+  } else {
+    res.send('OK');
+  }
+  return req;
 }
 
 /**
@@ -96,6 +87,7 @@ function publishEvent(req) {
       .then((pub) => {
         console.log(`PUBSUB ${JSON.stringify(pub.data)}`)
       });
+  }
 }
 
 /**
@@ -105,11 +97,13 @@ function publishEvent(req) {
  * @param {object} res Cloud Function response context.
  */
 exports.publishEvent = (req, res) => {
+  // Respond to Slack
   Promise.resolve(req)
     .then(logEvent)
     .then(verifyToken)
     .then((req) => sendResponse(req, res))
     .catch((err) => sendError(err, res));
 
+  // Publish event to PubSub for processing
   publishEvent(req);
 }
