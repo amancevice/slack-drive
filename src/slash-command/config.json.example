@@ -3,7 +3,10 @@
     "project_id": "<project-id>",
     "region": "us-central1",
     "redirect": "<redirect-function-name>",
-    "pubsub_topic": "<pubsub-topic>"
+    "pubsub": {
+      "events": "<pubsub-topic>",
+      "grants": "<pubsub-topic>",
+    }
   },
   "slack": {
     "api_token": "<web-api-token>",

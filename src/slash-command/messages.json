@@ -1,41 +1,45 @@
 {
-  "attachments": {
-    "drive_link": {
-      "color": "good",
-      "text": "This channel has its own private Google Drive folder.\n\nOnly members of the channel can view its contents.\n\nInvite other members into this channel to give them access!",
-      "mrkdwn_in": [
-        "text"
-      ],
-      "actions": [
-        {
-          "type": "button",
-          "text": "Google Drive",
-          "url": "https://drive.google.com"
-        }
-      ]
-    },
-    "drive_warning": {
-      "color": "warning",
-      "text": "*DO NOT SHARE FILES BY LINK IN THIS FOLDER!*\n\nType `/dsa drive` to view this message again.",
-      "mrkdwn_in": [
-        "text"
-      ],
-      "footer": "Slack | Google Drive",
-      "ts": "[timestamp]"
-    },
-    "leave_channel": {
-      "color": "warning",
-      "text": " You will lose access to this channel's Google Drive folder soon.\n\nRe-join the channel to gain access again.",
-      "mrkdwn_in": [
-        "text"
-      ],
-      "footer": "Slack | Google Drive",
-      "ts": "[timestamp]"
-    }
+  "drive": {
+    "attachments": [
+      {
+        "color": "good",
+        "text": "This channel has its own private Google Drive folder.\n\nOnly members of the channel can view its contents.\n\nInvite other members into this channel to give them access!",
+        "mrkdwn_in": [
+          "text"
+        ],
+        "actions": [
+          {
+            "type": "button",
+            "text": "Google Drive",
+            "url": "%s"
+          }
+        ]
+      },
+      {
+        "color": "warning",
+        "text": "*DO NOT SHARE FILES BY LINK IN THIS FOLDER!*\n\nType `%s drive` to view this message again.",
+        "mrkdwn_in": [
+          "text"
+        ],
+        "footer": "Slack | Google Drive",
+        "ts": "%s"
+      }
+    ]
   },
-  "texts": {
-    "goodbye": "Goodbye from #channel :wave:",
-    "slash_error": ":thinking_face: Hmm, I don't know that command...",
-    "welcome": ":sparkles: Welcome to #channel :sparkles:"
+  "error": {
+    "text": ":thinking_face: Hmm, I don't know that command..."
+  },
+  "help": {
+    "text": "Use /%s to connect to this channel's Google Drive folder",
+    "attachments": [
+      {
+        "text": "Get a link to the Google Drive folder:```/%s drive```Show this message:```/%s help```Get access to this channel's Google Drive folder:```/%s login```",
+        "footer": "Slack | Google Drive",
+        "ts": "%s"
+      }
+    ]
+  },
+  "login": {
+    "text": ":mantelpiece_clock: Hold on while I talk to Google Drive..."
   }
 }

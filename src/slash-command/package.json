@@ -4,6 +4,7 @@
   "description": "Respond to Slack slash-commands",
   "main": "index.js",
   "dependencies": {
+    "googleapis": "^29.0.0"
   },
   "scripts": {
     "build": "node build.js"
