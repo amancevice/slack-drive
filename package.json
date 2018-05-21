@@ -6,7 +6,7 @@
   "dependencies": {},
   "scripts": {
     "info": "echo 'Sync Slack channels with Google Drive'",
-    "build": "cd src/drive-redirect && npm run build && cd ../event-listener && npm run build && cd ../event-consumer && npm run build && cd ../slash-command && npm run build"
+    "build": "(cd src/event-listener && npm run build) && (cd src/event-consumer && npm run build) && (cd src/slash-command && npm run build)"
   },
   "repository": {
     "type": "git",
