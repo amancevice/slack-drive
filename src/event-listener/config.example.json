@@ -1,9 +1,18 @@
 {
+  "app": {
+    "channel": "<channel-id>"
+  },
   "cloud": {
     "project_id": "<project-id>",
     "pubsub_topic": "<topic-name>"
   },
   "slack": {
-    "verification_token": "<verification-token>"
+    "web_api_token": "<web-api-token>",
+    "verification_token": "<verification-token>",
+    "slash_command": "<slash-command-name>",
+    "users": {
+      "excluded": [],
+      "included": []
+    }
   }
 }
