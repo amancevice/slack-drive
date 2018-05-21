@@ -1,0 +1,15 @@
+{
+  "app": {
+    "channel": "<channel-id>"
+  },
+  "cloud": {
+    "project_id": "<project-id>"
+  },
+  "slack": {
+    "web_api_token": "<web-api-token>",
+    "users": {
+      "excluded": [],
+      "included": []
+    }
+  }
+}
