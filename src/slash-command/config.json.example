@@ -11,6 +11,10 @@
   "slack": {
     "api_token": "<web-api-token>",
     "verification_token": "<verification-token>",
-    "slash_command": "<slash-command-name>"
+    "slash_command": "<slash-command-name>",
+    "users": {
+      "excluded": [],
+      "included": []
+    }
   }
 }

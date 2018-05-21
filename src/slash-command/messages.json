@@ -1,45 +1,23 @@
 {
-  "drive": {
-    "attachments": [
-      {
-        "color": "good",
-        "text": "This channel has its own private Google Drive folder.\n\nOnly members of the channel can view its contents.\n\nInvite other members into this channel to give them access!",
-        "mrkdwn_in": [
-          "text"
-        ],
-        "actions": [
-          {
-            "type": "button",
-            "text": "Google Drive",
-            "url": "%s"
-          }
-        ]
-      },
-      {
-        "color": "warning",
-        "text": "*DO NOT SHARE FILES BY LINK IN THIS FOLDER!*\n\nType `%s drive` to view this message again.",
-        "mrkdwn_in": [
-          "text"
-        ],
-        "footer": "Slack | Google Drive",
-        "ts": "%s"
-      }
-    ]
+  "null": {
+    "text": ":mantelpiece_clock: Hold on while I talk to Google Drive..."
   },
   "error": {
-    "text": ":thinking_face: Hmm, I don't know that command..."
+    "text": ":thinking_face: Hmm, I don't know that command... Try `%s help`"
   },
   "help": {
-    "text": "Use /%s to connect to this channel's Google Drive folder",
+    "text": "Use the `%s` command to access this channel's Google Drive folder",
     "attachments": [
       {
-        "text": "Get a link to the Google Drive folder:```/%s drive```Show this message:```/%s help```Get access to this channel's Google Drive folder:```/%s login```",
+        "color": "danger",
+        "mrkdwn_in": ["text"],
+        "text": "`%s` will fetch the link to Google Drive\n\n`%s help` will show this message",
         "footer": "Slack | Google Drive",
         "ts": "%s"
       }
     ]
   },
-  "login": {
-    "text": ":mantelpiece_clock: Hold on while I talk to Google Drive..."
+  "not_permitted": {
+    "text": ":crying_cat_face: Sorry, you aren't allowed to do this yet."
   }
 }

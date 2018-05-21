@@ -2,8 +2,6 @@ const config = require('./config.json');
 const messages = require('./messages.json');
 const service = require('./client_secret.json');
 const util = require('util');
-const cmd = config.slack.slash_command;
-const redirect = `https://${config.cloud.region}-${config.cloud.project_id}.cloudfunctions.net/${config.cloud.redirect}`;
 const scopes = ['https://www.googleapis.com/auth/pubsub'];
 const topic = `projects/${config.cloud.project_id}/topics/${config.cloud.pubsub.grants}`;
 
@@ -14,7 +12,11 @@ const topic = `projects/${config.cloud.project_id}/topics/${config.cloud.pubsub.
  */
 function logRequest(req) {
   console.log(`HEADERS ${JSON.stringify(req.headers)}`);
-  console.log(`RESPONSE URL ${req.body.response_url}`);
+  console.log(`REQUEST ${JSON.stringify({
+    channel_id: req.body.channel_id,
+    user_id: req.body.user_id,
+    text: req.body.text,
+    response_url: req.body.response_url})}`);
   return req;
 }
 
@@ -35,15 +37,50 @@ function verifyToken(req) {
 }
 
 /**
- * Verify request contains proper text.
+ * Verify request contains valid text.
  *
  * @param {object} req Cloud Function request context.
  */
 function verifyText(req) {
-  if (req.body.text === 'drive' ||
-      req.body.text === 'help' ||
-      req.body.text === 'login') return req;
-  throw new Error(`Unknown text: ${req.body.text}`);
+  // base subcommand
+  if (req.body.text === '') {
+    req.message = messages.null;
+  } else if (req.body.text === 'help') {
+    req.message = JSON.parse(util.format(
+      JSON.stringify(messages.help),
+      config.slack.slash_command,
+      config.slack.slash_command,
+      config.slack.slash_command,
+      new Date()/1000
+    ));
+  } else {
+    throw new Error(`Unknown text: ${req.body.text}`);
+  }
+  return req;
+}
+
+/**
+ * Determine if user is in exclude list.
+ *
+ * @param {object} req Cloud Function request context.
+ */
+function userPermitted(req) {
+  return config.slack.users.excluded.indexOf(req.body.user_id) < 0 &&  // *not* excluded
+         (config.slack.users.included.length === 0 ||                  // no includes
+          config.slack.users.included.indexOf(req.body.user_id) >= 0); // explicit include
+}
+
+/**
+ * Verify request contains permitted user.
+ *
+ * @param {object} req Cloud Function request context.
+ */
+function verifyUser(req) {
+  if (req.body.text !== 'help' && !userPermitted(req)) {
+    console.log('USER NOT PERMITTED');
+    req.message = messages.not_permitted;
+  }
+  return req;
 }
 
 /**
@@ -53,37 +90,23 @@ function verifyText(req) {
  * @param {object} res Cloud Function response context.
  */
 function sendResponse(req, res) {
-  const ts = new Date()/1000;
-  if (req.body.text === 'drive') {
-    res.json(JSON.parse(util.format(
-      JSON.stringify(messages.drive),
-      `${redirect}?channel=${req.body.channel_id}`,
-      cmd,
-      ts
-    )));
-  } else if (req.body.text === 'help') {
-    res.json(JSON.parse(util.format(
-      JSON.stringify(messages.help),
-      cmd,
-      cmd,
-      cmd,
-      cmd,
-      ts
-    )));
-  } else if (req.body.text === 'login') {
-    res.json(messages.login);
-  }
+  res.json(req.message);
+  return req;
 }
 
 /**
  * Send Error message back to issuer.
  *
  * @param {object} err The error object.
- * @param {object} req Cloud Function request context.
+ * @param {object} res Cloud Function response context.
  */
 function sendError(err, res) {
   console.error(err);
-  res.json(messages.error);
+  res.json(JSON.parse(util.format(
+    JSON.stringify(messages.error),
+    config.slack.slash_command
+  )));
+  throw err;
 }
 
 /**
@@ -92,23 +115,26 @@ function sendError(err, res) {
  * @param {object} req Cloud Function request context.
  */
 function publishRequest(req) {
-  const { google } = require('googleapis');
-  const jwt = new google.auth.JWT(service.client_email, './client_secret.json', null, scopes);
-  const pubsub = google.pubsub({version: 'v1', auth: jwt});
+  if (userPermitted(req) && req.body.text === '') {
+    const { google } = require('googleapis');
+    const jwt = new google.auth.JWT(service.client_email, './client_secret.json', null, scopes);
+    const pubsub = google.pubsub({version: 'v1', auth: jwt});
 
-  return pubsub.projects.topics.publish({
-      topic: topic,
-      resource: {
-        messages: [
-          {
-            data: Buffer.from(JSON.stringify(req.body)).toString('base64')
-          }
-        ]
-      }
-    })
-    .then((pub) => {
-      console.log(`PUBLISHED ${JSON.stringify(pub.data)}`);
-    });
+    console.log(`PUBLISHING ${topic}`);
+    return pubsub.projects.topics.publish({
+        topic: topic,
+        resource: {
+          messages: [
+            {
+              data: Buffer.from(JSON.stringify(req.body)).toString('base64')
+            }
+          ]
+        }
+      })
+      .then((pub) => {
+        console.log(`PUBLISHED ${JSON.stringify(pub.data)}`);
+      });
+  }
 }
 
 /**
@@ -118,15 +144,13 @@ function publishRequest(req) {
  * @param {object} res Cloud Function response context.
  */
 exports.slashCommand = (req, res) => {
-
   // Send slash-command response
   Promise.resolve(req)
     .then(logRequest)
     .then(verifyToken)
     .then(verifyText)
+    .then(verifyUser)
     .then((req) => sendResponse(req, res))
+    .then(publishRequest)
     .catch((err) => sendError(err, res));
-
-  // Publish request to PubSub for processing
-  publishRequest(req);
 }
