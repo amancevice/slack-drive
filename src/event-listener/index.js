@@ -7,7 +7,6 @@ const config = require('./config.json')
  */
 function logEvent(req) {
   console.log(`HEADERS ${JSON.stringify(req.headers)}`);
-  console.log(`EVENT ${JSON.stringify(req.body.event)}`);
   return req;
 }
 
@@ -60,32 +59,31 @@ function sendError(err, res) {
  * @param {object} req Cloud Function request context.
  */
 function publishEvent(req) {
-  const service = require('./client_secret.json');
-  const { google } = require('googleapis');
-  const scopes = ['https://www.googleapis.com/auth/pubsub'];
-  const jwt = new google.auth.JWT(service.client_email, './client_secret.json', null, scopes);
-  const pubsub = google.pubsub({version: 'v1', auth: jwt});
-  const topic = `projects/${config.cloud.project_id}/topics/${config.cloud.pubsub_topic}`;
-
-  // Skip if this is a Slack retry event
-  // TODO there must be a better way to handle this...
-  if (req.headers['x-slack-retry-num'] !== undefined) {
-    return Promise.resolve(req);
+  // Skip if this is a Slack retry event (there must be a better way to handle this...)
+  if (req.headers['x-slack-retry-num'] !== undefined) return Promise.resolve(req);
 
   // Publish event to PubSub if it is an `event_callback`
-  } else if (req.body.type === 'event_callback') {
+  if (req.body.type === 'event_callback') {
+    const service = require('./client_secret.json');
+    const { google } = require('googleapis');
+    const scopes = ['https://www.googleapis.com/auth/pubsub'];
+    const topic = `projects/${config.cloud.project_id}/topics/${config.cloud.pubsub_topic}`;
+    const jwt = new google.auth.JWT(service.client_email, './client_secret.json', null, scopes);
+    const pubsub = google.pubsub({version: 'v1', auth: jwt});
+    const data = Buffer.from(JSON.stringify(req.body)).toString('base64');
+
     return pubsub.projects.topics.publish({
         topic: topic,
         resource: {
           messages: [
             {
-              data: Buffer.from(JSON.stringify(req.body)).toString('base64')
+              data: data
             }
           ]
         }
       })
       .then((pub) => {
-        console.log(`PUBSUB ${JSON.stringify(pub.data)}`)
+        console.log(`PUBSUB ${JSON.stringify(pub.data)}`);
       });
   }
 }
