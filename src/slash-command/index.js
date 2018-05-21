@@ -58,7 +58,7 @@ function verifyText(req) {
 }
 
 /**
- * Determine if user is in exclude list.
+ * Determine if user is permitted to use this service.
  *
  * @param {object} req Cloud Function request context.
  */
