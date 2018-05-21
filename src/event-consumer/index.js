@@ -197,7 +197,8 @@ function findOrCreateFolder(e) {
 function addPermission(e) {
 
   // Grant permission
-  if (e.event.type === 'member_joined_channel') {
+  if (e.event.type === 'member_joined_channel' ||
+      e.event.type === 'slash_command') {
     return drive.permissions.create({
         fileId: e.folder.id,
         sendNotificationEmail: false,
@@ -243,6 +244,7 @@ function postResponse(e) {
     response.user = e.user.id;
 
     // Post ephemeral message
+    console.log('POSTING EPHEMERAL RESPONSE');
     return slack.chat.postEphemeral(response).then((res) => { return e; });
   }
 
@@ -257,6 +259,7 @@ function postResponse(e) {
         response.channel = res.channel.id;
 
         // Post DM to user
+        console.log('POSTING DIRECT RESPONSE');
         return slack.chat.postMessage(response).then((res) => { return e; });
       })
   }
@@ -285,8 +288,8 @@ function postRecord(e) {
   );
   record.channel = config.app.channel;
 
-  console.log(`RECORD ${JSON.stringify(record)}`);
   // Post record message
+  console.log('POSTING RECORD');
   return slack.chat.postMessage(record)
     .then((res) => { return e; })
     .catch((err) => { console.error(JSON.stringify(err)); throw err; });
