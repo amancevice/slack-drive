@@ -1,6 +1,5 @@
 const config = require('./config.json');
 const messages = require('./messages.json');
-const util = require('util');
 const msg = {};
 
 /**
@@ -44,13 +43,11 @@ function verifyText(req) {
   if (req.body.text === '') {
     msg.message = messages.null;
   } else if (req.body.text === 'help') {
-    msg.message = JSON.parse(util.format(
-      JSON.stringify(messages.help),
-      config.slack.slash_command,
-      config.slack.slash_command,
-      config.slack.slash_command,
-      new Date()/1000
-    ));
+    msg.message = JSON.parse(
+      JSON.stringify(messages.help)
+        .replace(/\$\{cmd\}/g, config.slack.slash_command)
+        .replace(/\$\{ts\}/g, new Date()/1000)
+    );
   } else {
     throw new Error(`Unknown text: ${req.body.text}`);
   }
@@ -100,10 +97,10 @@ function sendResponse(req, res) {
  */
 function sendError(err, res) {
   console.error(err);
-  msg.message = JSON.parse(util.format(
-    JSON.stringify(messages.error),
-    config.slack.slash_command
-  ));
+  msg.message = JSON.parse(
+    JSON.stringify(messages.error)
+      .replace(/\$\{cmd\}/g, config.slack.slash_command)
+  );
   res.json(msg.message);
   throw err;
 }

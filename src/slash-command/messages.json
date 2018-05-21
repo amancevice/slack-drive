@@ -3,17 +3,17 @@
     "text": ":mantelpiece_clock: Hold on while I talk to Google Drive..."
   },
   "error": {
-    "text": ":thinking_face: Hmm, I don't know that command... Try `%s help`"
+    "text": ":thinking_face: Hmm, I don't know that command... Try `${cmd} help`"
   },
   "help": {
-    "text": "Use the `%s` command to access this channel's Google Drive folder",
+    "text": "Use the `${cmd}` command to access this channel's Google Drive folder",
     "attachments": [
       {
         "color": "danger",
         "mrkdwn_in": ["text"],
-        "text": "`%s` will fetch the link to Google Drive\n\n`%s help` will show this message",
+        "text": "`${cmd}` will fetch the link to Google Drive\n\n`${cmd} help` will show this message",
         "footer": "Slack | Google Drive",
-        "ts": "%s"
+        "ts": "${ts}"
       }
     ]
   },
