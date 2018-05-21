@@ -39,18 +39,25 @@ function verifyToken(req) {
  * @param {object} req Cloud Function request context.
  */
 function verifyText(req) {
-  // base subcommand
+  // main
   if (req.body.text === '') {
     msg.message = messages.null;
-  } else if (req.body.text === 'help') {
+  }
+
+  // drive help
+  else if (req.body.text === 'help') {
     msg.message = JSON.parse(
       JSON.stringify(messages.help)
         .replace(/\$\{cmd\}/g, config.slack.slash_command)
         .replace(/\$\{ts\}/g, new Date()/1000)
     );
-  } else {
+  }
+
+  // drive ?
+  else {
     throw new Error(`Unknown text: ${req.body.text}`);
   }
+
   return req;
 }
 
@@ -74,6 +81,29 @@ function verifyUser(req) {
   if (req.body.text !== 'help' && !userPermitted(req)) {
     console.log('USER NOT PERMITTED');
     msg.message = messages.not_permitted;
+  }
+  return req;
+}
+
+/**
+ * Verify channel is public or private.
+ *
+ * @param {object} req Cloud Function request context.
+ */
+function validChannel(req) {
+  return req.body.channel_id[0] === 'C' ||
+         req.body.channel_id[0] === 'G'
+}
+
+/**
+ * Verify request contains valid channel.
+ *
+ * @param {object} req Cloud Function request context.
+ */
+function verifyChannel(req) {
+  if (!validChannel(req)) {
+    console.log('BAD CHANNEL');
+    msg.message = messages.bad_channel;
   }
   return req;
 }
@@ -111,7 +141,7 @@ function sendError(err, res) {
  * @param {object} req Cloud Function request context.
  */
 function publishRequest(req) {
-  if (userPermitted(req) && req.body.text === '') {
+  if (validChannel(req) && userPermitted(req) && req.body.text === '') {
     const service = require('./client_secret.json');
     const { google } = require('googleapis');
     const scopes = ['https://www.googleapis.com/auth/pubsub'];
@@ -160,9 +190,10 @@ exports.slashCommand = (req, res) => {
     .then(verifyToken)
     .then(verifyText)
     .then(verifyUser)
+    .then(verifyChannel)
     .then((req) => sendResponse(req, res))
     .catch((err) => sendError(err, res));
 
   // Publish event to PubSub for processing
-  publishRequest(req);
+  //publishRequest(req);
 }

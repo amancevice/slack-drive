@@ -17,6 +17,9 @@
       }
     ]
   },
+  "bad_channel": {
+    "text": ":tv: You have to be in a channel to do this."
+  },
   "not_permitted": {
     "text": ":crying_cat_face: Sorry, you aren't allowed to do this yet."
   }
