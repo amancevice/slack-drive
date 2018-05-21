@@ -7,7 +7,6 @@
     "googleapis": "^29.0.0"
   },
   "scripts": {
-    "build": "node build.js"
   },
   "repository": {
     "type": "git",
