@@ -336,6 +336,7 @@ function processEvent(e) {
   else if (userEvent(e)) {
     e.event.type = `${e.event.type} (Testing Only)`
     return Promise.resolve(e).then(getUser);
+  }
 
   return Promise.resolve(e);
 }
