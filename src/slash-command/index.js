@@ -1,9 +1,7 @@
 const config = require('./config.json');
 const messages = require('./messages.json');
-const service = require('./client_secret.json');
 const util = require('util');
-const scopes = ['https://www.googleapis.com/auth/pubsub'];
-const topic = `projects/${config.cloud.project_id}/topics/${config.cloud.pubsub.grants}`;
+const msg = {};
 
 /**
  * Log request info.
@@ -44,9 +42,9 @@ function verifyToken(req) {
 function verifyText(req) {
   // base subcommand
   if (req.body.text === '') {
-    req.message = messages.null;
+    msg.message = messages.null;
   } else if (req.body.text === 'help') {
-    req.message = JSON.parse(util.format(
+    msg.message = JSON.parse(util.format(
       JSON.stringify(messages.help),
       config.slack.slash_command,
       config.slack.slash_command,
@@ -78,7 +76,7 @@ function userPermitted(req) {
 function verifyUser(req) {
   if (req.body.text !== 'help' && !userPermitted(req)) {
     console.log('USER NOT PERMITTED');
-    req.message = messages.not_permitted;
+    msg.message = messages.not_permitted;
   }
   return req;
 }
@@ -90,7 +88,7 @@ function verifyUser(req) {
  * @param {object} res Cloud Function response context.
  */
 function sendResponse(req, res) {
-  res.json(req.message);
+  res.json(msg.message);
   return req;
 }
 
@@ -102,10 +100,11 @@ function sendResponse(req, res) {
  */
 function sendError(err, res) {
   console.error(err);
-  res.json(JSON.parse(util.format(
+  msg.message = JSON.parse(util.format(
     JSON.stringify(messages.error),
     config.slack.slash_command
-  )));
+  ));
+  res.json(msg.message);
   throw err;
 }
 
@@ -116,18 +115,31 @@ function sendError(err, res) {
  */
 function publishRequest(req) {
   if (userPermitted(req) && req.body.text === '') {
+    const service = require('./client_secret.json');
     const { google } = require('googleapis');
+    const scopes = ['https://www.googleapis.com/auth/pubsub'];
+    const topic = `projects/${config.cloud.project_id}/topics/${config.cloud.pubsub.grants}`;
     const jwt = new google.auth.JWT(service.client_email, './client_secret.json', null, scopes);
     const pubsub = google.pubsub({version: 'v1', auth: jwt});
-    const msg = {event: req.body, type: 'slash_command'};
 
+    // Create "event" to publish
+    req.body.event = {
+      type: 'slash_command',
+      user: req.body.user_id,
+      channel: req.body.channel_id,
+      channel_type: req.body.channel_id[0],
+      team: req.body.team_id,
+      event_ts: new Date()/1000
+    };
+
+    // Publish event
     console.log(`PUBLISHING ${topic}`);
     return pubsub.projects.topics.publish({
         topic: topic,
         resource: {
           messages: [
             {
-              data: Buffer.from(JSON.stringify(msg)).toString('base64')
+              data: Buffer.from(JSON.stringify(req.body)).toString('base64')
             }
           ]
         }
