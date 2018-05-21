@@ -119,6 +119,7 @@ function publishRequest(req) {
     const { google } = require('googleapis');
     const jwt = new google.auth.JWT(service.client_email, './client_secret.json', null, scopes);
     const pubsub = google.pubsub({version: 'v1', auth: jwt});
+    const msg = {event: req.body, type: 'slash_command'};
 
     console.log(`PUBLISHING ${topic}`);
     return pubsub.projects.topics.publish({
@@ -126,7 +127,7 @@ function publishRequest(req) {
         resource: {
           messages: [
             {
-              data: Buffer.from(JSON.stringify(req.body)).toString('base64')
+              data: Buffer.from(JSON.stringify(msg)).toString('base64')
             }
           ]
         }
@@ -151,6 +152,8 @@ exports.slashCommand = (req, res) => {
     .then(verifyText)
     .then(verifyUser)
     .then((req) => sendResponse(req, res))
-    .then(publishRequest)
     .catch((err) => sendError(err, res));
+
+  // Publish event to PubSub for processing
+  publishRequest(req);
 }
