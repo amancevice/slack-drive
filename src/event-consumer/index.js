@@ -1,14 +1,20 @@
-const clientSecret = require('./client_secret.json');
+// App
 const config = require('./config.json');
+const messages = require('./messages.json');
+
+// Slack
 const { WebClient } = require('@slack/client');
+const slack = new WebClient(config.slack.web_api_token);
+
+// Google Drive
+const service = require('./client_secret.json');
 const { google } = require('googleapis');
-const slack = new WebClient(config.slack.api_token);
 const mimeTypeFolder = 'application/vnd.google-apps.folder';
 const scopes = ['https://www.googleapis.com/auth/drive'];
-const jwt = new google.auth.JWT(clientSecret.client_email, './client_secret.json', null, scopes);
+const jwt = new google.auth.JWT(service.client_email, './client_secret.json', null, scopes);
 const drive = google.drive({version: 'v3', auth: jwt});
 const red = '#f83a22';
-const prefix = 'https://drive.google.com/drive/u/0/folders/'
+const prefix = 'https://drive.google.com/drive/u/0/folders/';
 
 String.prototype.titlize = function() {
   return this.replace(/_/g, ' ').split(/ /).map((x) => {
@@ -42,23 +48,6 @@ function decodeEvent(e) {
 }
 
 /**
- * Determine if work is to be done.
- *
- * @param {object} e Slack event object message.
- * @param {object} e.event Slack event object.
- */
-function processEvent(e) {
-  return Promise.resolve(e)
-    .then(getChannel)
-    .then(getUser)
-    .then(includeExclude)
-    .then(findOrCreateFolder)
-    .then(addPermission)
-    .then(postDirect)
-    .then(postMessage);
-}
-
-/**
  * Determine if event is a user-event.
  *
  * @param {object} e Slack event object message.
@@ -66,42 +55,20 @@ function processEvent(e) {
  */
 function userEvent(e) {
   return e.event.type === 'member_joined_channel' ||
-         e.event.type === 'member_left_channel';
+         e.event.type === 'member_left_channel' ||
+         e.event.type === 'slash_command';
 }
 
 /**
- * Determine if user is in exclude list.
+ * Determine if user is permitted to use this service.
  *
  * @param {object} e Slack event object message.
  * @param {object} e.event Slack event object.
  */
-function userExcluded(e) {
-  return config.slack.users.excluded.indexOf(e.user.id) >= 0;
-}
-
-/**
- * Determine if user is in include list.
- *
- * @param {object} e Slack event object message.
- * @param {object} e.event Slack event object.
- */
-function userIncluded(e) {
-  return config.slack.users.included.length === 0 ||
-         config.slack.users.included.indexOf(e.user.id) >= 0;
-}
-
-/**
- * Determine if work is to be done.
- *
- * @param {object} e Slack event object message.
- * @param {object} e.event Slack event object.
- */
-function includeExclude(e) {
-  if (!userEvent(e) || userExcluded(e) || !userIncluded(e)) {
-    console.log(`USER NOT INCLUDED`);
-    e.event.type = `${e.event.type} (Testing Only)`;
-  }
-  return e;
+function userPermitted(e) {
+  return config.slack.users.excluded.indexOf(e.event.user) < 0 && // *not* excluded
+        (config.slack.users.included.length === 0 ||              // no includes
+         config.slack.users.included.indexOf(e.event.user) >= 0); // explicit include
 }
 
 /**
@@ -116,9 +83,10 @@ function getChannel(e) {
   if (typeof e.event.channel === 'object') {
     e.channel = e.event.channel;
     return Promise.resolve(e);
+  }
 
   // Get channel info from Slack
-  } else if (e.event.channel_type === 'C') {
+  else if (e.event.channel_type === 'C') {
     return slack.channels.info({channel: e.event.channel})
       .then((res) => {
         console.log(`CHANNEL #${res.channel.name}`);
@@ -129,9 +97,10 @@ function getChannel(e) {
         console.error(JSON.stringify(err));
         throw err;
       });
+  }
 
   // Get private channel info from Slack
-  } else if (e.event.channel_type === 'G') {
+  else if (e.event.channel_type === 'G') {
     return slack.groups.info({channel: e.event.channel})
       .then((res) => {
         console.log(`CHANNEL #${res.group.name}`);
@@ -143,6 +112,8 @@ function getChannel(e) {
         throw err;
       });
   }
+
+  throw new Error('Unknown channel_type');
 }
 
 /**
@@ -154,22 +125,19 @@ function getChannel(e) {
 function getUser(e) {
 
   // No need to get user info if no user in event
-  if (e.event.user === undefined) {
-    return Promise.resolve(e);
+  if (e.event.user === undefined) return Promise.resolve(e);
 
   // Get user info from Slack
-  } else {
-    return slack.users.info({user: e.event.user})
-      .then((res) => {
-        console.log(`USER @${res.user.profile.display_name}`);
-        e.user = res.user;
-        return e;
-      })
-      .catch((err) => {
-        console.error(JSON.stringify(err));
-        return e;
-      });
-  }
+  return slack.users.info({user: e.event.user})
+    .then((res) => {
+      console.log(`USER @${res.user.profile.display_name}`);
+      e.user = res.user;
+      return e;
+    })
+    .catch((err) => {
+      console.error(JSON.stringify(err));
+      throw err;
+    });
 }
 
 /**
@@ -207,13 +175,12 @@ function findOrCreateFolder(e) {
             console.error(err);
             throw err;
           });
+      }
 
       // Return if folder exists
-      } else {
-        console.log(`FOUND FOLDER #${e.channel.name}`);
-        res.data.files.map((x) => { e.folder = x; });
-        return e;
-      }
+      console.log(`FOUND FOLDER #${e.channel.name}`);
+      res.data.files.map((x) => { e.folder = x; });
+      return e;
     })
     .catch((err) => {
       console.error(err);
@@ -245,9 +212,9 @@ function addPermission(e) {
         e.permission = res.data;
         return e;
       });
-  } else {
-    return Promise.resolve(e);
   }
+
+  return Promise.resolve(e);
 }
 
 /**
@@ -256,55 +223,46 @@ function addPermission(e) {
  * @param {object} e Slack event object message.
  * @param {object} e.event Slack event object.
  */
-function postDirect(e) {
+function postResponse(e) {
 
-  // Member joined channel
-  if (e.event.type === 'member_joined_channel') {
+  // Build message
+  const response = JSON.parse(
+    JSON.stringify(messages.responses[e.event.type])
+      .replace(/\$\{channel\}/g, e.channel.name)
+      .replace(/\$\{cmd\}/g, config.slack.slash_command)
+      .replace(/\$\{ts\}/g, e.event.event_ts)
+      .replace(/\$\{url\}/g, `${prefix}${e.folder.id}`)
+  );
 
-    // Build message
-    if (e.folder !== undefined) {
-      config.slack.messages.member_joined_channel.attachments[0].actions[0].url = `${prefix}${e.folder.id}`;
-    }
-    config.slack.messages.member_joined_channel.attachments[1].ts = e.event.event_ts;
-    config.slack.messages.member_joined_channel.channel = e.channel.id;
-    config.slack.messages.member_joined_channel.text = `:sparkles: Welcome to #${e.channel.name} :sparkles:`;
-    config.slack.messages.member_joined_channel.user = e.user.id;
+  // Member joined channel / Slash command
+  if (e.event.type === 'member_joined_channel' ||
+      e.event.type === 'slash_command') {
 
-    // Post ephemeral message back to Slack
-    return slack.chat.postEphemeral(config.slack.messages.member_joined_channel)
-      .then((res) => {
-        console.log(`EPHEMERAL RESPONSE ${JSON.stringify(res)}`);
-        return e;
-      });
+    // Route message
+    response.channel = e.channel.id;
+    response.user = e.user.id;
+
+    // Post ephemeral message
+    return slack.chat.postEphemeral(response).then((res) => { return e; });
+  }
 
   // Member left channel
-  } else if (e.event.type === 'member_left_channel') {
+  else if (e.event.type === 'member_left_channel') {
 
     // Open DM
     return slack.im.open({user: e.user.id})
       .then((res) => {
 
-        // Build message
-        config.slack.messages.member_left_channel.attachments[0].ts = e.event.event_ts;
-        config.slack.messages.member_left_channel.channel = res.channel.id;
-        config.slack.messages.member_left_channel.text = `Goodbye from #${e.channel.name} :wave:`;
+        // Route message
+        response.channel = res.channel.id;
 
         // Post DM to user
-        return slack.chat.postMessage(config.slack.messages.member_left_channel)
-          .then((res) => {
-            console.log(`DM RESPONSE ${JSON.stringify(res)}`);
-            return e;
-          })
-          .catch((err) => {
-            console.error(JSON.stringify(err));
-            throw err;
-          });
+        return slack.chat.postMessage(response).then((res) => { return e; });
       })
+  }
 
   // No ephemeral message necessary
-  } else {
-    return Promise.resolve(e);
-  }
+  return Promise.resolve(e);
 }
 
 /**
@@ -313,30 +271,25 @@ function postDirect(e) {
  * @param {object} e Slack event object message.
  * @param {object} e.event Slack event object.
  */
-function postMessage(e) {
+function postRecord(e) {
 
   // Build message
-  config.slack.messages.success.channel = config.slack.app_channel;
-  config.slack.messages.success.attachments.map((x) => {
-    x.ts = e.event.event_ts;
-    x.title = e.event.type.titlize();
-    x.fields = [{short: true, title: 'Channel', value: `#${e.channel.name}`}];
-    if (e.user) {
-      x.fields.push({short: true, title: 'User', value: `@${e.user.profile.display_name}`})
-    }
-    x.fields.push({title: 'Event', value: JSON.stringify(e.event).tickwrap()});
-  });
+  const record = JSON.parse(
+    JSON.stringify(messages.records.success)
+      .replace(/\$\{channel\}/g, e.channel.name)
+      .replace(/\$\{cmd\}/g, config.slack.slash_command)
+      .replace(/\$\{event\}/g, JSON.stringify(e.event).replace(/"/g, '\\"').tickwrap())
+      .replace(/\$\{title\}/g, e.event.type.titlize())
+      .replace(/\$\{ts\}/g, e.event.event_ts)
+      .replace(/\$\{user\}/g, e.user.profile.display_name)
+  );
+  record.channel = config.app.channel;
 
-  // Post success message back to Slack
-  return slack.chat.postMessage(config.slack.messages.success)
-    .then((res) => {
-      console.log(`MESSAGE RESPONSE ${JSON.stringify(res)}`);
-      return e;
-    })
-    .catch((err) => {
-      console.error(JSON.stringify(err));
-      throw err;
-    });
+  console.log(`RECORD ${JSON.stringify(record)}`);
+  // Post record message
+  return slack.chat.postMessage(record)
+    .then((res) => { return e; })
+    .catch((err) => { console.error(JSON.stringify(err)); throw err; });
 }
 
 /**
@@ -346,21 +299,45 @@ function postMessage(e) {
  * @param {object} e Slack event object.
  */
 function postError(err, e) {
-
   // Build message
-  config.slack.messages.error = config.slack.app_channel;
-  config.slack.messages.error.attachments.map((x) => {
-    x.ts = new Date()/1000;
-    x.fields = [
-      {title: err.name, value: err.message},
-      {title: 'Stacktrace', value: err.stack.tickwrap()},
-      {title: 'Event', value: JSON.stringify(e).tickwrap()}
-    ];
-  });
+  const error = JSON.parse(
+    JSON.stringify(messages.records.error)
+      .replace(/\$\{error_message\}/g, err.message)
+      .replace(/\$\{error_name\}/g, err.name)
+      .replace(/\$\{event\}/g, JSON.stringify(e).replace(/"/g, '\\"').tickwrap())
+      .replace(/\$\{stack\}/g, err.stack.replace(/\n/g, '\\n').tickwrap())
+      .replace(/\$\{ts\}/g, new Date()/1000)
+  );
+  error.channel = config.app.channel;
 
   // Post error message back to Slack
-  console.log('HERE!');
-  return slack.chat.postMessage(config.slack.messages.error);
+  slack.chat.postMessage(error);
+
+  throw err;
+}
+
+/**
+ * Determine if work is to be done.
+ *
+ * @param {object} e Slack event object message.
+ * @param {object} e.event Slack event object.
+ */
+function processEvent(e) {
+  // User event & user is permitted to invoke event
+  if (userEvent(e) && userPermitted(e)) {
+    return Promise.resolve(e)
+      .then(getUser)
+      .then(findOrCreateFolder)
+      .then(addPermission)
+      .then(postResponse);
+  }
+
+  // User event, but user is not permitted to evoke event
+  else if (userEvent(e)) {
+    e.event.type = `${e.event.type} (Testing Only)`
+    return Promise.resolve(e).then(getUser);
+
+  return Promise.resolve(e);
 }
 
 /**
@@ -373,7 +350,9 @@ exports.consumeEvent = (event, callback) => {
   Promise.resolve(event.data)
     .then(logEvent)
     .then(decodeEvent)
+    .then(getChannel)
     .then(processEvent)
+    .then(postRecord)
     .catch((err) => postError(err, event.data));
 
   callback();
