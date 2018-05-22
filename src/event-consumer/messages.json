@@ -59,11 +59,11 @@
   },
   "responses": {
     "member_joined_channel": {
-      "text": ":sparkles: Welcome to ${channel} :sparkles:\nMembers of ${channel} have access to a private Google Drive.\nInvite other members into this channel to give them access!",
+      "text": ":sparkles: Welcome to ${channel} :sparkles:\nMembers of this channel have access to a private Google Drive.\nInvite other members into this channel to give them access!",
       "attachments": [
         {
           "color": "good",
-          "text": "Go to ${channel} in Google Drive",
+          "text": "Visit ${channel} in Google Drive",
           "mrkdwn_in": [
             "text"
           ],

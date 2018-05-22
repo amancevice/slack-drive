@@ -9,7 +9,7 @@
     "text": ":thinking_face: Hmm, I don't know that command... Try `/${cmd} help`"
   },
   "help": {
-    "text": "*Slack | Google Drive Folders*\nMembers of ${channel} have access to a private Google Drive.\nInvite other members into this channel to give them access!",
+    "text": "Members of ${channel} have access to a private Google Drive.\nInvite other members into this channel to give them access!",
     "attachments": [
       {
         "color": "danger",
@@ -26,7 +26,7 @@
     "attachments": [
       {
         "color": "good",
-        "text": "Go to <#${channel}> in Google Drive",
+        "text": "Visit <#${channel}> in Google Drive",
         "mrkdwn_in": [
           "text"
         ],
