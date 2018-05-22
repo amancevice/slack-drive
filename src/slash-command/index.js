@@ -58,6 +58,7 @@ function verifyText(req) {
     throw new Error(`Unknown text: ${req.body.text}`);
   }
 
+  console.log(`VERIFIED /${config.slack.slash_command} ${req.body.text}`);
   return req;
 }
 
@@ -81,8 +82,12 @@ function verifyUser(req) {
   if (req.body.text !== 'help' && !userPermitted(req)) {
     console.log('USER NOT PERMITTED');
     msg.message = messages.not_permitted;
+    return req;
   }
-  return req;
+  else {
+    console.log('USER PERMITTED');
+    return req;
+  }
 }
 
 /**
@@ -104,8 +109,12 @@ function verifyChannel(req) {
   if (!validChannel(req)) {
     console.log('BAD CHANNEL');
     msg.message = messages.bad_channel;
+    return req;
   }
-  return req;
+  else {
+    console.log('VALID CHANNEL');
+    return req;
+  }
 }
 
 /**
@@ -141,7 +150,7 @@ function sendError(err, res) {
  * @param {object} req Cloud Function request context.
  */
 function publishRequest(req) {
-  if (validChannel(req) && userPermitted(req) && req.body.text === '') {
+  if (validChannel(req) && userPermitted(req) && req.body.text === 'link') {
     const service = require('./client_secret.json');
     const { google } = require('googleapis');
     const scopes = ['https://www.googleapis.com/auth/pubsub'];
