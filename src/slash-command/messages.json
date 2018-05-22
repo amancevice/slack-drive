@@ -18,7 +18,31 @@
     ]
   },
   "link": {
-    "text": ":mantelpiece_clock: Hold on while I talk to Google Drive..."
+    "attachments": [
+      {
+        "color": "good",
+        "text": "This channel has its own private Google Drive folder.\nOnly members of the channel can view its contents.\nInvite other members into this channel to give them access!",
+        "mrkdwn_in": [
+          "text"
+        ],
+        "actions": [
+          {
+            "type": "button",
+            "text": "Google Drive",
+            "url": "${url}"
+          }
+        ]
+      },
+      {
+        "color": "warning",
+        "text": "*DO NOT SHARE FILES BY LINK IN THIS FOLDER!*\nType `/${cmd} link` to view this message again.",
+        "mrkdwn_in": [
+          "text"
+        ],
+        "footer": "Slack | Google Drive",
+        "ts": "${ts}"
+      }
+    ]
   },
   "not_permitted": {
     "text": ":crying_cat_face: Sorry, you aren't allowed to do this yet."

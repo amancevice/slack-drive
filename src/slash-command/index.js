@@ -1,6 +1,6 @@
 const config = require('./config.json');
 const messages = require('./messages.json');
-const msg = {};
+const responses = {};
 
 /**
  * Log request info.
@@ -41,7 +41,7 @@ function verifyToken(req) {
 function verifyText(req) {
   // drive (help)
   if (req.body.text === '' || req.body.text === 'help') {
-    msg.message = JSON.parse(
+    responses.message = JSON.parse(
       JSON.stringify(messages.help)
         .replace(/\$\{cmd\}/g, config.slack.slash_command)
         .replace(/\$\{ts\}/g, new Date()/1000)
@@ -50,7 +50,12 @@ function verifyText(req) {
 
   // drive link
   else if (req.body.text === 'link') {
-    msg.message = messages.link;
+    responses.message = JSON.parse(
+      JSON.stringify(messages.link)
+        .replace(/\$\{cmd\}/g, config.slack.slash_command)
+        .replace(/\$\{ts\}/g, new Date()/1000)
+        .replace(/\$\{url\}/g, `${config.slack.redirect_url}?channel=${req.body.channel_id}&user=${req.body.user_id}`)
+    );
   }
 
   // drive ?
@@ -68,9 +73,9 @@ function verifyText(req) {
  * @param {object} req Cloud Function request context.
  */
 function userPermitted(req) {
-  return config.slack.users.excluded.indexOf(req.body.user_id) < 0 &&  // *not* excluded
-         (config.slack.users.included.length === 0 ||                  // no includes
-          config.slack.users.included.indexOf(req.body.user_id) >= 0); // explicit include
+  return config.slack.users.excluded.indexOf(req.body.user_id) < 0 && // *not* excluded
+        (config.slack.users.included.length === 0 ||                  // no includes
+         config.slack.users.included.indexOf(req.body.user_id) >= 0); // explicit include
 }
 
 /**
@@ -81,7 +86,7 @@ function userPermitted(req) {
 function verifyUser(req) {
   if (req.body.text !== 'help' && !userPermitted(req)) {
     console.log('USER NOT PERMITTED');
-    msg.message = messages.not_permitted;
+    responses.message = messages.not_permitted;
     return req;
   }
   else {
@@ -108,7 +113,7 @@ function validChannel(req) {
 function verifyChannel(req) {
   if (!validChannel(req)) {
     console.log('BAD CHANNEL');
-    msg.message = messages.bad_channel;
+    responses.message = messages.bad_channel;
     return req;
   }
   else {
@@ -124,7 +129,8 @@ function verifyChannel(req) {
  * @param {object} res Cloud Function response context.
  */
 function sendResponse(req, res) {
-  res.json(msg.message);
+  console.log(`RESPONSE ${JSON.stringify(responses.message)}`);
+  res.json(responses.message);
   return req;
 }
 
@@ -136,54 +142,13 @@ function sendResponse(req, res) {
  */
 function sendError(err, res) {
   console.error(err);
-  msg.message = JSON.parse(
+  console.error(`ERROR RESPONSE ${JSON.stringify(messages.error)}`);
+  responses.error = JSON.parse(
     JSON.stringify(messages.error)
       .replace(/\$\{cmd\}/g, config.slack.slash_command)
   );
-  res.json(msg.message);
+  res.json(responses.error);
   throw err;
-}
-
-/**
- * Publish event to PubSub topic (if it's not a retry).
- *
- * @param {object} req Cloud Function request context.
- */
-function publishRequest(req) {
-  if (validChannel(req) && userPermitted(req) && req.body.text === 'link') {
-    const service = require('./client_secret.json');
-    const { google } = require('googleapis');
-    const scopes = ['https://www.googleapis.com/auth/pubsub'];
-    const topic = `projects/${config.cloud.project_id}/topics/${config.cloud.pubsub_topic}`;
-    const jwt = new google.auth.JWT(service.client_email, './client_secret.json', null, scopes);
-    const pubsub = google.pubsub({version: 'v1', auth: jwt});
-
-    // Create "event" to publish
-    req.body.event = {
-      type: 'slash_command',
-      user: req.body.user_id,
-      channel: req.body.channel_id,
-      channel_type: req.body.channel_id[0],
-      team: req.body.team_id,
-      event_ts: new Date()/1000
-    };
-
-    // Publish event
-    console.log(`PUBLISHING ${topic}`);
-    return pubsub.projects.topics.publish({
-        topic: topic,
-        resource: {
-          messages: [
-            {
-              data: Buffer.from(JSON.stringify(req.body)).toString('base64')
-            }
-          ]
-        }
-      })
-      .then((pub) => {
-        console.log(`PUBLISHED ${JSON.stringify(pub.data)}`);
-      });
-  }
 }
 
 /**
@@ -202,7 +167,4 @@ exports.slashCommand = (req, res) => {
     .then(verifyChannel)
     .then((req) => sendResponse(req, res))
     .catch((err) => sendError(err, res));
-
-  // Publish event to PubSub for processing
-  publishRequest(req);
 }

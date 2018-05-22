@@ -235,9 +235,8 @@ function postResponse(e) {
       .replace(/\$\{url\}/g, `${prefix}${e.folder.id}`)
   );
 
-  // Member joined channel / Slash command
-  if (e.event.type === 'member_joined_channel' ||
-      e.event.type === 'slash_command') {
+  // Member joined channel
+  else if (e.event.type === 'member_joined_channel') {
 
     // Route message
     response.channel = e.channel.id;
