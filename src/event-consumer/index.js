@@ -229,14 +229,14 @@ function postResponse(e) {
   // Build message
   const response = JSON.parse(
     JSON.stringify(messages.responses[e.event.type])
-      .replace(/\$\{channel\}/g, e.channel.name)
+      .replace(/\$\{channel\}/g, e.event.channel_type === 'C' ? `<#${e.channel.id}>` : `#${e.channel.name}`)
       .replace(/\$\{cmd\}/g, config.slack.slash_command)
       .replace(/\$\{ts\}/g, e.event.event_ts)
       .replace(/\$\{url\}/g, `${prefix}${e.folder.id}`)
   );
 
   // Member joined channel
-  else if (e.event.type === 'member_joined_channel') {
+  if (e.event.type === 'member_joined_channel') {
 
     // Route message
     response.channel = e.channel.id;

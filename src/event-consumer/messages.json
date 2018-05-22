@@ -63,7 +63,7 @@
       "attachments": [
         {
           "color": "good",
-          "text": "Go to <#${channel}> in Google Drive",
+          "text": "Go to ${channel} in Google Drive",
           "mrkdwn_in": [
             "text"
           ],
@@ -91,7 +91,7 @@
       "attachments": [
         {
           "color": "warning",
-          "text": "Goodbye from #${channel} :wave:\nYou will lose access to this channel's Google Drive folder soon.\nRe-join the channel to gain access again.",
+          "text": "Goodbye from ${channel} :wave:\nYou will lose access to this channel's Google Drive folder soon.\nRe-join the channel to gain access again.",
           "mrkdwn_in": [
             "text"
           ],
