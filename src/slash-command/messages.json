@@ -1,6 +1,6 @@
 {
-  "null": {
-    "text": ":mantelpiece_clock: Hold on while I talk to Google Drive..."
+  "bad_channel": {
+    "text": ":tv: You have to be in a channel to do this."
   },
   "error": {
     "text": ":thinking_face: Hmm, I don't know that command... Try `/${cmd} help`"
@@ -11,14 +11,14 @@
       {
         "color": "danger",
         "mrkdwn_in": ["text"],
-        "text": "`/${cmd}` will fetch the link to Google Drive\n`/${cmd} help` will show this message",
+        "text": "`/${cmd}` will show this message\n`/${cmd} link` will fetch the link to Google Drive",
         "footer": "Slack | Google Drive",
         "ts": "${ts}"
       }
     ]
   },
-  "bad_channel": {
-    "text": ":tv: You have to be in a channel to do this."
+  "link": {
+    "text": ":mantelpiece_clock: Hold on while I talk to Google Drive..."
   },
   "not_permitted": {
     "text": ":crying_cat_face: Sorry, you aren't allowed to do this yet."

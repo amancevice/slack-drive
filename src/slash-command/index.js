@@ -39,18 +39,18 @@ function verifyToken(req) {
  * @param {object} req Cloud Function request context.
  */
 function verifyText(req) {
-  // main
-  if (req.body.text === '') {
-    msg.message = messages.null;
-  }
-
-  // drive help
-  else if (req.body.text === 'help') {
+  // drive (help)
+  if (req.body.text === '' || req.body.text === 'help') {
     msg.message = JSON.parse(
       JSON.stringify(messages.help)
         .replace(/\$\{cmd\}/g, config.slack.slash_command)
         .replace(/\$\{ts\}/g, new Date()/1000)
     );
+  }
+
+  // drive link
+  else if (req.body.text === 'link') {
+    msg.message = messages.link;
   }
 
   // drive ?
@@ -195,5 +195,5 @@ exports.slashCommand = (req, res) => {
     .catch((err) => sendError(err, res));
 
   // Publish event to PubSub for processing
-  //publishRequest(req);
+  publishRequest(req);
 }
