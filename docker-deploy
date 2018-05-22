@@ -3,6 +3,7 @@
 if [ $# -eq 0 ]; then
   deploy event-consumer
   deploy event-listener
+  deploy redirect
   deploy slash-command
 
 elif [ "$1" == "event-listener" ]; then
@@ -14,6 +15,11 @@ elif [ "$1" == "event-consumer" ]; then
   cd $1
   npm install --save
   functions deploy consumeEvent --trigger-topic=${PUBSUB_TOPIC}
+
+elif [ "$1" == "redirect" ]; then
+  cd $1
+  npm install --save
+  functions deploy redirect --trigger-http --timeout 10s
 
 elif [ "$1" == "slash-command" ]; then
   cd $1

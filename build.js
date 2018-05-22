@@ -1,5 +1,5 @@
 const child_process = require('child_process');
-const packages = ['event-consumer', 'event-listener', 'slash-command'];
+const packages = ['event-consumer', 'event-listener', 'redirect', 'slash-command'];
 
 child_process.execSync(`mkdir -p ./dist`);
 packages.map((pkg) => {
