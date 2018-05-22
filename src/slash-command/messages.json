@@ -27,6 +27,7 @@
         ],
         "actions": [
           {
+            "style": "primary",
             "type": "button",
             "text": "Google Drive",
             "url": "${url}"
