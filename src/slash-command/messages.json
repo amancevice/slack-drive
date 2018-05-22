@@ -1,17 +1,22 @@
 {
+  "bad_token": {
+    "text": ":old_key: Bad Slack verification token."
+  },
   "bad_channel": {
     "text": ":tv: You have to be in a channel to do this."
   },
-  "error": {
+  "bad_text": {
     "text": ":thinking_face: Hmm, I don't know that command... Try `/${cmd} help`"
   },
   "help": {
-    "text": "Use the `/${cmd}` command to access this channel's Google Drive folder",
+    "text": "*Slack | Google Drive Folders*\nMembers of ${channel} have access to a private Google Drive.\nInvite other members into this channel to give them access!",
     "attachments": [
       {
         "color": "danger",
-        "mrkdwn_in": ["text"],
-        "text": "`/${cmd}` will show this message\n`/${cmd} link` will fetch the link to Google Drive",
+        "mrkdwn_in": [
+          "text"
+        ],
+        "text": "Use the `/${cmd}` command to access this channel's Google Drive folder\n`/${cmd} help` will show this message\n`/${cmd} link` will fetch the link to Google Drive\n*Do not share files by link in this folder!*",
         "footer": "Slack | Google Drive",
         "ts": "${ts}"
       }
@@ -21,7 +26,7 @@
     "attachments": [
       {
         "color": "good",
-        "text": "This channel has its own private Google Drive folder.\nOnly members of the channel can view its contents.\nInvite other members into this channel to give them access!",
+        "text": "Go to <#${channel}> in Google Drive",
         "mrkdwn_in": [
           "text"
         ],
@@ -36,7 +41,7 @@
       },
       {
         "color": "warning",
-        "text": "*DO NOT SHARE FILES BY LINK IN THIS FOLDER!*\nType `/${cmd} link` to view this message again.",
+        "text": ":warning: Do not share files by link in this folder!",
         "mrkdwn_in": [
           "text"
         ],

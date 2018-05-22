@@ -1,6 +1,7 @@
 const config = require('./config.json');
 const messages = require('./messages.json');
-const responses = {};
+const subcommands = ['', 'help', 'link'];
+const responses = {error: ":boom: Uh oh, something went wrong..."};
 
 /**
  * Log request info.
@@ -12,8 +13,8 @@ function logRequest(req) {
   console.log(`REQUEST ${JSON.stringify({
     channel_id: req.body.channel_id,
     user_id: req.body.user_id,
-    text: req.body.text,
-    response_url: req.body.response_url})}`);
+    text: req.body.text
+  })}`);
   return req;
 }
 
@@ -25,11 +26,9 @@ function logRequest(req) {
 function verifyToken(req) {
   // Verify token
   if (!req.body || req.body.token !== config.slack.verification_token) {
-    const error = new Error('Invalid Credentials');
-    error.code = 401;
-    throw error;
+    responses.error = messages.bad_token;
+    throw new Error('Invalid Credentials');
   }
-
   return req;
 }
 
@@ -39,31 +38,13 @@ function verifyToken(req) {
  * @param {object} req Cloud Function request context.
  */
 function verifyText(req) {
-  // drive (help)
-  if (req.body.text === '' || req.body.text === 'help') {
-    responses.message = JSON.parse(
-      JSON.stringify(messages.help)
+  if (subcommands.indexOf(req.body.text) < 0) {
+    responses.error = JSON.parse(
+      JSON.stringify(messages.bad_text)
         .replace(/\$\{cmd\}/g, config.slack.slash_command)
-        .replace(/\$\{ts\}/g, new Date()/1000)
     );
-  }
-
-  // drive link
-  else if (req.body.text === 'link') {
-    responses.message = JSON.parse(
-      JSON.stringify(messages.link)
-        .replace(/\$\{cmd\}/g, config.slack.slash_command)
-        .replace(/\$\{ts\}/g, new Date()/1000)
-        .replace(/\$\{url\}/g, `${config.slack.redirect_url}?channel=${req.body.channel_id}&user=${req.body.user_id}`)
-    );
-  }
-
-  // drive ?
-  else {
     throw new Error(`Unknown text: ${req.body.text}`);
   }
-
-  console.log(`VERIFIED /${config.slack.slash_command} ${req.body.text}`);
   return req;
 }
 
@@ -85,14 +66,10 @@ function userPermitted(req) {
  */
 function verifyUser(req) {
   if (req.body.text !== 'help' && !userPermitted(req)) {
-    console.log('USER NOT PERMITTED');
-    responses.message = messages.not_permitted;
-    return req;
+    responses.error = messages.not_permitted;
+    throw new Error(`User not permitted: ${req.body.user_id}`);
   }
-  else {
-    console.log('USER PERMITTED');
-    return req;
-  }
+  return req;
 }
 
 /**
@@ -112,14 +89,10 @@ function validChannel(req) {
  */
 function verifyChannel(req) {
   if (!validChannel(req)) {
-    console.log('BAD CHANNEL');
-    responses.message = messages.bad_channel;
-    return req;
+    responses.error = messages.bad_channel;
+    throw new Error(`Bad channel: ${req.body.channel_id}`);
   }
-  else {
-    console.log('VALID CHANNEL');
-    return req;
-  }
+  return req;
 }
 
 /**
@@ -129,7 +102,27 @@ function verifyChannel(req) {
  * @param {object} res Cloud Function response context.
  */
 function sendResponse(req, res) {
-  console.log(`RESPONSE ${JSON.stringify(responses.message)}`);
+
+  // drive (help)
+  if (req.body.text === '' || req.body.text === 'help') {
+    responses.message = JSON.parse(
+      JSON.stringify(messages.help)
+        .replace(/\$\{channel\}/g, req.body.channel_id[0] === 'C' ? `<#${req.body.channel_id}>` : 'this channel')
+        .replace(/\$\{cmd\}/g, config.slack.slash_command)
+        .replace(/\$\{ts\}/g, new Date()/1000)
+    );
+  }
+
+  // drive link
+  else if (req.body.text === 'link') {
+    responses.message = JSON.parse(
+      JSON.stringify(messages.link)
+        .replace(/\$\{channel\}/g, req.body.channel_id)
+        .replace(/\$\{cmd\}/g, config.slack.slash_command)
+        .replace(/\$\{ts\}/g, new Date()/1000)
+        .replace(/\$\{url\}/g, `${config.slack.redirect_url}?channel=${req.body.channel_id}&user=${req.body.user_id}`)
+    );
+  }
   res.json(responses.message);
   return req;
 }
@@ -142,13 +135,7 @@ function sendResponse(req, res) {
  */
 function sendError(err, res) {
   console.error(err);
-  console.error(`ERROR RESPONSE ${JSON.stringify(messages.error)}`);
-  responses.error = JSON.parse(
-    JSON.stringify(messages.error)
-      .replace(/\$\{cmd\}/g, config.slack.slash_command)
-  );
   res.json(responses.error);
-  throw err;
 }
 
 /**
@@ -162,9 +149,9 @@ exports.slashCommand = (req, res) => {
   Promise.resolve(req)
     .then(logRequest)
     .then(verifyToken)
-    .then(verifyText)
-    .then(verifyUser)
     .then(verifyChannel)
+    .then(verifyUser)
+    .then(verifyText)
     .then((req) => sendResponse(req, res))
     .catch((err) => sendError(err, res));
 }
