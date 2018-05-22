@@ -59,11 +59,10 @@
   },
   "responses": {
     "member_joined_channel": {
-      "text": ":sparkles: Welcome to #${channel} :sparkles:",
       "attachments": [
         {
           "color": "good",
-          "text": "This channel has its own private Google Drive folder.\nOnly members of the channel can view its contents.\nInvite other members into this channel to give them access!",
+          "text": ":sparkles: Welcome to #${channel} :sparkles:\nThis channel has its own private Google Drive folder.\nOnly members of the channel can view its contents.\nInvite other members into this channel to give them access!",
           "mrkdwn_in": [
             "text"
           ],
@@ -77,7 +76,7 @@
         },
         {
           "color": "warning",
-          "text": "*DO NOT SHARE FILES BY LINK IN THIS FOLDER!*\nType `/${cmd}` to view this message again.",
+          "text": "*DO NOT SHARE FILES BY LINK IN THIS FOLDER!*\nType `/${cmd} link` to view this message again.",
           "mrkdwn_in": [
             "text"
           ],
@@ -87,11 +86,10 @@
       ]
     },
     "member_left_channel": {
-      "text": "Goodbye from #${channel} :wave:",
       "attachments": [
         {
           "color": "warning",
-          "text": " You will lose access to this channel's Google Drive folder soon.\nRe-join the channel to gain access again.",
+          "text": "Goodbye from #${channel} :wave:\nYou will lose access to this channel's Google Drive folder soon.\nRe-join the channel to gain access again.",
           "mrkdwn_in": [
             "text"
           ],
