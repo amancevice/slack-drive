@@ -59,15 +59,17 @@
   },
   "responses": {
     "member_joined_channel": {
+      "text": ":sparkles: Welcome to ${channel} :sparkles:\nMembers of ${channel} have access to a private Google Drive.\nInvite other members into this channel to give them access!",
       "attachments": [
         {
           "color": "good",
-          "text": ":sparkles: Welcome to #${channel} :sparkles:\nThis channel has its own private Google Drive folder.\nOnly members of the channel can view its contents.\nInvite other members into this channel to give them access!",
+          "text": "Go to <#${channel}> in Google Drive",
           "mrkdwn_in": [
             "text"
           ],
           "actions": [
             {
+              "style": "primary",
               "type": "button",
               "text": "Google Drive",
               "url": "${url}"
@@ -75,11 +77,11 @@
           ]
         },
         {
-          "color": "warning",
-          "text": "*DO NOT SHARE FILES BY LINK IN THIS FOLDER!*\nType `/${cmd} link` to view this message again.",
+          "color": "danger",
           "mrkdwn_in": [
             "text"
           ],
+          "text": "Use the `/${cmd}` command to access this channel's Google Drive folder\n`/${cmd} help` will show this message\n`/${cmd} link` will fetch the link to Google Drive\n*Do not share files by link in this folder!*",
           "footer": "Slack | Google Drive",
           "ts": "${ts}"
         }
@@ -90,33 +92,6 @@
         {
           "color": "warning",
           "text": "Goodbye from #${channel} :wave:\nYou will lose access to this channel's Google Drive folder soon.\nRe-join the channel to gain access again.",
-          "mrkdwn_in": [
-            "text"
-          ],
-          "footer": "Slack | Google Drive",
-          "ts": "${ts}"
-        }
-      ]
-    },
-    "slash_command": {
-      "attachments": [
-        {
-          "color": "good",
-          "text": "This channel has its own private Google Drive folder.\nOnly members of the channel can view its contents.\nInvite other members into this channel to give them access!",
-          "mrkdwn_in": [
-            "text"
-          ],
-          "actions": [
-            {
-              "type": "button",
-              "text": "Google Drive",
-              "url": "${url}"
-            }
-          ]
-        },
-        {
-          "color": "warning",
-          "text": "*DO NOT SHARE FILES BY LINK IN THIS FOLDER!*\nType `/${cmd}` to view this message again.",
           "mrkdwn_in": [
             "text"
           ],
