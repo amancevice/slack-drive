@@ -67,8 +67,7 @@ function decodeEvent(e) {
  */
 function userEvent(e) {
   return e.event.type === 'member_joined_channel' ||
-         e.event.type === 'member_left_channel' ||
-         e.event.type === 'slash_command';
+         e.event.type === 'member_left_channel';
 }
 
 /**
@@ -227,10 +226,8 @@ function findOrCreateFolder(e) {
  * @param {object} e.event Slack event object.
  */
 function addPermission(e) {
-
-  // Grant permission
-  if (e.event.type === 'member_joined_channel' ||
-      e.event.type === 'slash_command') {
+  // Grant permission (ignoring bot users)
+  if (!user.is_bot && e.event.type === 'member_joined_channel') {
     return drive.permissions.create({
         fileId: folder.id,
         sendNotificationEmail: false,
