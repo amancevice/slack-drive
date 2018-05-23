@@ -87,7 +87,7 @@ function getUser(req) {
   // Get user info from Slack
   return slack.users.info({user: req.query.user})
     .then((res) => {
-      console.log(`USER @${res.user.profile.display_name}`);
+      console.log(`USER @${res.user.profile.name}`);
       user = res.user;
       return req;
     })
@@ -103,8 +103,7 @@ function getUser(req) {
  * @param {object} req Cloud Function request context.
  */
 function verifyRequest(req) {
-  // TODO
-  if (channel.members.indexOf(user.id) < 0) throw new Error('USER NOT PERMITTED');
+  if (channel.members.indexOf(user.id) < 0) throw new Error('User not permitted');
   return req;
 }
 
@@ -161,6 +160,8 @@ function findOrCreateFolder(req) {
  * @param {object} req Cloud Function request context.
  */
 function addPermission(req) {
+
+  if (user.profile.email === undefined) throw new Error('No email defined for Slack user');
 
   return drive.permissions.create({
       fileId: folder.id,
