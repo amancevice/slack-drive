@@ -1,7 +1,15 @@
 const config = require('./config.json');
 const messages = require('./messages.json');
 const subcommands = ['', 'help', 'link'];
-const responses = {error: ":boom: Uh oh, something went wrong..."};
+
+Object.prototype.interpolate = function(mapping) {
+  let that = this;
+  Object.keys(mapping).map((k) => {
+    that = JSON.parse(JSON.stringify(that)
+      .replace(new RegExp(`\\$\\{${k}\\}`, 'g'), mapping[k]));
+  });
+  return that;
+}
 
 /**
  * Log request info.
@@ -15,7 +23,7 @@ function logRequest(req) {
     user_id: req.body.user_id,
     text: req.body.text
   })}`);
-  return req;
+  return Promise.resolve(req);
 }
 
 /**
@@ -25,11 +33,11 @@ function logRequest(req) {
  */
 function verifyToken(req) {
   // Verify token
+
   if (!req.body || req.body.token !== config.slack.verification_token) {
-    responses.error = messages.bad_token;
-    throw new Error('Invalid Credentials');
+    return Promise.reject(messages.bad_token);
   }
-  return req;
+  return Promise.resolve(req);
 }
 
 /**
@@ -39,11 +47,9 @@ function verifyToken(req) {
  */
 function verifyText(req) {
   if (subcommands.indexOf(req.body.text) < 0) {
-    responses.error = JSON.parse(
-      JSON.stringify(messages.bad_text)
-        .replace(/\$\{cmd\}/g, config.slack.slash_command)
-    );
-    throw new Error(`Unknown text: ${req.body.text}`);
+    return Promise.reject(messages.bad_text.interpolate({
+      cmd: config.slack.slash_command
+    }));
   }
   return req;
 }
@@ -66,10 +72,9 @@ function userPermitted(req) {
  */
 function verifyUser(req) {
   if (req.body.text !== 'help' && !userPermitted(req)) {
-    responses.error = messages.not_permitted;
-    throw new Error(`User not permitted: ${req.body.user_id}`);
+    return Promise.reject(messages.not_permitted);
   }
-  return req;
+  return Promise.resolve(req);
 }
 
 /**
@@ -89,10 +94,30 @@ function validChannel(req) {
  */
 function verifyChannel(req) {
   if (!validChannel(req)) {
-    responses.error = messages.bad_channel;
-    throw new Error(`Bad channel: ${req.body.channel_id}`);
+    return Promise.reject(messages.bad_channel);
   }
-  return req;
+  return Promise.resolve(req);
+}
+
+function getResponse(req) {
+  // drive (help)
+  if (req.body.text === '' || req.body.text === 'help') {
+    return Promise.resolve(messages.help.interpolate({
+      channel: req.body.channel_id[0] === 'C' ? `<#${req.body.channel_id}>` : 'this channel',
+      cmd: config.slack.slash_command,
+      ts: new Date()/1000,
+    }));
+  }
+
+  // drive link
+  else if (req.body.text === 'link') {
+    return Promise.resolve(messages.link.interpolate({
+      channel: req.body.channel_id[0] === 'C' ? `<#${req.body.channel_id}>` : 'this channel',
+      cmd: config.slack.slash_command,
+      ts: new Date()/1000,
+      url: `${config.slack.redirect_url}?channel=${req.body.channel_id}&user=${req.body.user_id}`,
+    }));
+  }
 }
 
 /**
@@ -101,30 +126,9 @@ function verifyChannel(req) {
  * @param {object} req Cloud Function request context.
  * @param {object} res Cloud Function response context.
  */
-function sendResponse(req, res) {
-
-  // drive (help)
-  if (req.body.text === '' || req.body.text === 'help') {
-    responses.message = JSON.parse(
-      JSON.stringify(messages.help)
-        .replace(/\$\{channel\}/g, req.body.channel_id[0] === 'C' ? `<#${req.body.channel_id}>` : 'this channel')
-        .replace(/\$\{cmd\}/g, config.slack.slash_command)
-        .replace(/\$\{ts\}/g, new Date()/1000)
-    );
-  }
-
-  // drive link
-  else if (req.body.text === 'link') {
-    responses.message = JSON.parse(
-      JSON.stringify(messages.link)
-        .replace(/\$\{channel\}/g, req.body.channel_id)
-        .replace(/\$\{cmd\}/g, config.slack.slash_command)
-        .replace(/\$\{ts\}/g, new Date()/1000)
-        .replace(/\$\{url\}/g, `${config.slack.redirect_url}?channel=${req.body.channel_id}&user=${req.body.user_id}`)
-    );
-  }
-  res.json(responses.message);
-  return req;
+function sendResponse(msg, res) {
+  console.log(msg)
+  res.json(msg);
 }
 
 /**
@@ -135,7 +139,7 @@ function sendResponse(req, res) {
  */
 function sendError(err, res) {
   console.error(err);
-  res.json(responses.error);
+  res.json(err);
 }
 
 /**
@@ -152,6 +156,7 @@ exports.slashCommand = (req, res) => {
     .then(verifyChannel)
     .then(verifyUser)
     .then(verifyText)
-    .then((req) => sendResponse(req, res))
+    .then(getResponse)
+    .then((msg) => sendResponse(msg, res))
     .catch((err) => sendError(err, res));
 }

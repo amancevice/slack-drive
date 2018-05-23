@@ -12,11 +12,17 @@
     "text": "Members of ${channel} have access to a private Google Drive.\nInvite other members into this channel to give them access!",
     "attachments": [
       {
+        "color": "warning",
+        "title": "Caveats",
+        "text": "This tool works best if the email you used to sign up for Slack is the same as the one you use for Google Drive."
+      },
+      {
         "color": "danger",
+        "title": "Directions",
         "mrkdwn_in": [
           "text"
         ],
-        "text": "Use the `/${cmd}` command to access this channel's Google Drive folder\n`/${cmd} help` will show this message\n`/${cmd} link` will fetch the link to Google Drive\n*Do not share files by link in this folder!*",
+        "text": "Use the `/${cmd}` command in any channel.\n`/${cmd} help` will show this message.\n`/${cmd} link` will fetch the link to Google Drive.",
         "footer": "Slack | Google Drive",
         "ts": "${ts}"
       }
@@ -26,7 +32,7 @@
     "attachments": [
       {
         "color": "good",
-        "text": "Visit <#${channel}> in Google Drive",
+        "text": "Here is a link to ${channel} in Google Drive",
         "mrkdwn_in": [
           "text"
         ],
@@ -41,10 +47,7 @@
       },
       {
         "color": "warning",
-        "text": ":warning: Do not share files by link in this folder!",
-        "mrkdwn_in": [
-          "text"
-        ],
+        "text": "This tool works best if the email you used to sign up for Slack is the same as the one you use for Google Drive.",
         "footer": "Slack | Google Drive",
         "ts": "${ts}"
       }
