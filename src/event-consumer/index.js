@@ -307,12 +307,12 @@ function postRecord(e) {
 
   // Build message
   record = messages.records.success.interpolate({
-    channel: channel.name,
+    channel: e.event.channel_type === 'C' ? `<#${channel.id}>` : `#${channel.name}`,
     cmd: config.slack.slash_command,
     event: JSON.stringify(e.event).replace(/"/g, '\\"').tickwrap(),
     title: e.event.type.titlize(),
     ts: e.event.event_ts,
-    user: user.name
+    user: e.event.user === undefined ? 'N/A' : `<@${e.event.user}>`
   });
   record.channel = config.app.channel;
 

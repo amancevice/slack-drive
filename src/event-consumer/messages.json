@@ -35,12 +35,12 @@
           "fields": [
             {
               "title": "Channel",
-              "value": "#${channel}",
+              "value": "${channel}",
               "short": true
             },
             {
               "title": "User",
-              "value": "@${user}",
+              "value": "${user}",
               "short": true
             },
             {
