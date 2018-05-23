@@ -62,28 +62,32 @@
       "text": ":sparkles: Welcome to ${channel} :sparkles:\nMembers of this channel have access to a private Google Drive.\nInvite other members into this channel to give them access!",
       "attachments": [
         {
-          "color": "good",
-          "text": "Visit ${channel} in Google Drive",
+          "color": "${color}",
+          "title": "Directions",
+          "text": "Use the `/${cmd}` command in any channel.\n`/${cmd} help` will show this message.\n`/${cmd} link` will fetch the link to Google Drive.",
+          "footer": "Slack | Google Drive",
+          "ts": "${ts}",
           "mrkdwn_in": [
             "text"
-          ],
-          "actions": [
-            {
-              "style": "primary",
-              "type": "button",
-              "text": "Google Drive",
-              "url": "${url}"
-            }
           ]
         },
         {
-          "color": "danger",
-          "mrkdwn_in": [
-            "text"
-          ],
-          "text": "Use the `/${cmd}` command to access this channel's Google Drive folder\n`/${cmd} help` will show this message\n`/${cmd} link` will fetch the link to Google Drive\n*Do not share files by link in this folder!*",
-          "footer": "Slack | Google Drive",
-          "ts": "${ts}"
+          "color": "warning",
+          "title": "Caveats",
+          "text": "This tool works best if the email you used to sign up for Slack is the same as the one you use for Google Drive.",
+          "actions": [
+            {
+              "type": "button",
+              "text": "Google Drive",
+              "style": "primary",
+              "url": "${url}"
+            },
+            {
+              "type": "button",
+              "text": "Change Slack Email",
+              "url": "https://${team}.slack.com/account/settings#email"
+            }
+          ]
         }
       ]
     },

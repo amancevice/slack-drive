@@ -16,6 +16,15 @@ const drive = google.drive({version: 'v3', auth: jwt});
 const red = '#f83a22';
 const prefix = 'https://drive.google.com/drive/u/0/folders/';
 
+Object.prototype.interpolate = function(mapping) {
+  let that = this;
+  Object.keys(mapping).map((k) => {
+    that = JSON.parse(JSON.stringify(that)
+      .replace(new RegExp(`\\$\\{${k}\\}`, 'g'), mapping[k]));
+  });
+  return that;
+}
+
 String.prototype.titlize = function() {
   return this.replace(/_/g, ' ').split(/ /).map((x) => {
     return `${x.slice(0, 1).toUpperCase()}${x.slice(1)}`;
@@ -69,6 +78,26 @@ function userPermitted(e) {
   return config.slack.users.excluded.indexOf(e.event.user) < 0 && // *not* excluded
         (config.slack.users.included.length === 0 ||              // no includes
          config.slack.users.included.indexOf(e.event.user) >= 0); // explicit include
+}
+
+/**
+ * Get Slack team info.
+ *
+ * @param {object} e Slack event object message.
+ * @param {object} e.event Slack event object.
+ */
+function getTeam(e) {
+
+  return slack.team.info({team: e.team_id})
+    .then((res) => {
+      console.log(`TEAM #${res.team.domain}`);
+      e.team = res.team;
+      return e;
+    })
+    .catch((err) => {
+      console.error(JSON.stringify(err));
+      throw err;
+    });
 }
 
 /**
@@ -227,13 +256,14 @@ function addPermission(e) {
 function postResponse(e) {
 
   // Build message
-  const response = JSON.parse(
-    JSON.stringify(messages.responses[e.event.type])
-      .replace(/\$\{channel\}/g, e.event.channel_type === 'C' ? `<#${e.channel.id}>` : `#${e.channel.name}`)
-      .replace(/\$\{cmd\}/g, config.slack.slash_command)
-      .replace(/\$\{ts\}/g, e.event.event_ts)
-      .replace(/\$\{url\}/g, `${prefix}${e.folder.id}`)
-  );
+  const response = messages.responses[e.event.type].interpolate({
+    channel: e.event.channel_type === 'C' ? `<#${e.channel.id}>` : `#${e.channel.name}`,
+    cmd: config.slack.slash_command,
+    color: config.app.color,
+    team: e.team.domain,
+    ts: e.event.event_ts,
+    url: `${prefix}${e.folder.id}`
+  });
 
   // Member joined channel
   if (e.event.type === 'member_joined_channel') {
@@ -276,15 +306,14 @@ function postResponse(e) {
 function postRecord(e) {
 
   // Build message
-  const record = JSON.parse(
-    JSON.stringify(messages.records.success)
-      .replace(/\$\{channel\}/g, e.channel.name)
-      .replace(/\$\{cmd\}/g, config.slack.slash_command)
-      .replace(/\$\{event\}/g, JSON.stringify(e.event).replace(/"/g, '\\"').tickwrap())
-      .replace(/\$\{title\}/g, e.event.type.titlize())
-      .replace(/\$\{ts\}/g, e.event.event_ts)
-      .replace(/\$\{user\}/g, e.user.profile.display_name)
-  );
+  const record = messages.records.success.interpolate({
+    channel: e.channel.name,
+    cmd: config.slack.slash_command,
+    event: JSON.stringify(e.event).replace(/"/g, '\\"').tickwrap(),
+    title: e.event.type.titlize(),
+    ts: e.event.event_ts,
+    user: e.user.profile.display_name
+  });
   record.channel = config.app.channel;
 
   // Post record message
@@ -302,14 +331,13 @@ function postRecord(e) {
  */
 function postError(err, e) {
   // Build message
-  const error = JSON.parse(
-    JSON.stringify(messages.records.error)
-      .replace(/\$\{error_message\}/g, err.message)
-      .replace(/\$\{error_name\}/g, err.name)
-      .replace(/\$\{event\}/g, JSON.stringify(e).replace(/"/g, '\\"').tickwrap())
-      .replace(/\$\{stack\}/g, err.stack.replace(/\n/g, '\\n').tickwrap())
-      .replace(/\$\{ts\}/g, new Date()/1000)
-  );
+  const error = messages.records.error.interpolate({
+    error_message: err.message,
+    error_name: err.name,
+    event: JSON.stringify(e).replace(/"/g, '\\"').tickwrap(),
+    stack: err.stack.replace(/\n/g, '\\n').tickwrap(),
+    ts: new Date()/1000
+  });
   error.channel = config.app.channel;
 
   // Post error message back to Slack
@@ -353,6 +381,7 @@ exports.consumeEvent = (event, callback) => {
   Promise.resolve(event.data)
     .then(logEvent)
     .then(decodeEvent)
+    .then(getTeam)
     .then(getChannel)
     .then(processEvent)
     .then(postRecord)
