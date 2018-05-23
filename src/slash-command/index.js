@@ -99,6 +99,11 @@ function verifyChannel(req) {
   return Promise.resolve(req);
 }
 
+/**
+ * Get Slack message to send to user
+ *
+ * @param {object} req Cloud Function request context.
+ */
 function getResponse(req) {
   // drive (help)
   if (req.body.text === '' || req.body.text === 'help') {
@@ -122,6 +127,8 @@ function getResponse(req) {
       url: `${config.slack.redirect_url}?channel=${req.body.channel_id}&user=${req.body.user_id}`,
     }));
   }
+
+  return Promise.reject(messages.bad_text);
 }
 
 /**
