@@ -13,7 +13,9 @@
     "redirect_url": "<redirect-url>",
     "slash_command": "<slash-command-name>",
     "users": {
-      "excluded": [],
+      "excluded": [
+        "USLACKBOT"
+      ],
       "included": []
     }
   }
