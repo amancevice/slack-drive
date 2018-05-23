@@ -16,6 +16,9 @@ const drive = google.drive({version: 'v3', auth: jwt});
 const red = '#f83a22';
 const prefix = 'https://drive.google.com/drive/u/0/folders/';
 
+// Lazy globals
+let team, channel, user, folder, permission, response, record;
+
 Object.prototype.interpolate = function(mapping) {
   let that = JSON.parse(JSON.stringify(this));
   Object.keys(mapping).map((k) => {
@@ -91,7 +94,7 @@ function getTeam(e) {
   return slack.team.info({team: e.team_id})
     .then((res) => {
       console.log(`TEAM #${res.team.domain}`);
-      e.team = res.team;
+      team = res.team;
       return e;
     })
     .catch((err) => {
@@ -110,7 +113,7 @@ function getChannel(e) {
 
   // No need to call Slack if `channel` is already an object
   if (typeof e.event.channel === 'object') {
-    e.channel = e.event.channel;
+    channel = e.event.channel;
     return Promise.resolve(e);
   }
 
@@ -119,7 +122,7 @@ function getChannel(e) {
     return slack.channels.info({channel: e.event.channel})
       .then((res) => {
         console.log(`CHANNEL #${res.channel.name}`);
-        e.channel = res.channel;
+        channel = res.channel;
         return e;
       })
       .catch((err) => {
@@ -133,7 +136,7 @@ function getChannel(e) {
     return slack.groups.info({channel: e.event.channel})
       .then((res) => {
         console.log(`CHANNEL #${res.group.name}`);
-        e.channel = res.group;
+        channel = res.group;
         return e;
       })
       .catch((err) => {
@@ -159,8 +162,8 @@ function getUser(e) {
   // Get user info from Slack
   return slack.users.info({user: e.event.user})
     .then((res) => {
-      console.log(`USER @${res.user.profile.display_name}`);
-      e.user = res.user;
+      console.log(`USER @${res.user.name}`);
+      user = res.user;
       return e;
     })
     .catch((err) => {
@@ -179,25 +182,25 @@ function findOrCreateFolder(e) {
 
   // Search for folder by channel ID in `appProperties`
   return drive.files.list({
-      q: `appProperties has { key='channel' and value='${e.channel.id}' }`
+      q: `appProperties has { key='channel' and value='${channel.id}' }`
     })
     .then((res) => {
 
       // Create folder and return
       if (res.data.files.length === 0) {
-        console.log(`CREATING FOLDER #${e.channel.name}`);
+        console.log(`CREATING FOLDER #${channel.name}`);
         return drive.files.create({
             resource: {
-              name: `#${e.channel.name}`,
+              name: `#${channel.name}`,
               mimeType: mimeTypeFolder,
               folderColorRgb: red,
               appProperties: {
-                channel: e.channel.id
+                channel: channel.id
               }
             }
           })
           .then((res) => {
-            e.folder = res.data;
+            folder = res.data;
             return e;
           })
           .catch((err) => {
@@ -207,8 +210,8 @@ function findOrCreateFolder(e) {
       }
 
       // Return if folder exists
-      console.log(`FOUND FOLDER #${e.channel.name}`);
-      res.data.files.map((x) => { e.folder = x; });
+      console.log(`FOUND FOLDER #${channel.name}`);
+      res.data.files.map((x) => { folder = x; });
       return e;
     })
     .catch((err) => {
@@ -229,17 +232,17 @@ function addPermission(e) {
   if (e.event.type === 'member_joined_channel' ||
       e.event.type === 'slash_command') {
     return drive.permissions.create({
-        fileId: e.folder.id,
+        fileId: folder.id,
         sendNotificationEmail: false,
         resource: {
           role: 'writer',
           type: 'user',
-          emailAddress: e.user.profile.email
+          emailAddress: user.profile.email
         }
       })
       .then((res) => {
         console.log(`GRANTED ${JSON.stringify(res.data)}`);
-        e.permission = res.data;
+        permission = res.data;
         return e;
       });
   }
@@ -256,21 +259,21 @@ function addPermission(e) {
 function postResponse(e) {
 
   // Build message
-  const response = messages.responses[e.event.type].interpolate({
-    channel: e.event.channel_type === 'C' ? `<#${e.channel.id}>` : `#${e.channel.name}`,
+  response = messages.responses[e.event.type].interpolate({
+    channel: e.event.channel_type === 'C' ? `<#${channel.id}>` : `#${channel.name}`,
     cmd: config.slack.slash_command,
     color: config.app.color,
-    team: e.team.domain,
+    team: team.domain,
     ts: e.event.event_ts,
-    url: `${prefix}${e.folder.id}`
+    url: `${prefix}${folder.id}`
   });
 
   // Member joined channel
   if (e.event.type === 'member_joined_channel') {
 
     // Route message
-    response.channel = e.channel.id;
-    response.user = e.user.id;
+    response.channel = channel.id;
+    response.user = user.id;
 
     // Post ephemeral message
     console.log('POSTING EPHEMERAL RESPONSE');
@@ -281,7 +284,7 @@ function postResponse(e) {
   else if (e.event.type === 'member_left_channel') {
 
     // Open DM
-    return slack.im.open({user: e.user.id})
+    return slack.im.open({user: user.id})
       .then((res) => {
 
         // Route message
@@ -306,13 +309,13 @@ function postResponse(e) {
 function postRecord(e) {
 
   // Build message
-  const record = messages.records.success.interpolate({
-    channel: e.channel.name,
+  record = messages.records.success.interpolate({
+    channel: channel.name,
     cmd: config.slack.slash_command,
     event: JSON.stringify(e.event).replace(/"/g, '\\"').tickwrap(),
     title: e.event.type.titlize(),
     ts: e.event.event_ts,
-    user: e.user.profile.display_name
+    user: user.name
   });
   record.channel = config.app.channel;
 

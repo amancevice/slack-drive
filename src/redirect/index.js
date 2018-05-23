@@ -1,7 +1,5 @@
 // App
 const config = require('./config.json');
-const messages = require('./messages.json');
-const redirect = {};
 
 // Slack
 const { WebClient } = require('@slack/client');
@@ -16,6 +14,9 @@ const jwt = new google.auth.JWT(service.client_email, './client_secret.json', nu
 const drive = google.drive({version: 'v3', auth: jwt});
 const red = '#f83a22';
 const prefix = 'https://drive.google.com/drive/u/0/folders/';
+
+// Lazy globals
+let channel, user, folder, permission;
 
 String.prototype.titlize = function() {
   return this.replace(/_/g, ' ').split(/ /).map((x) => {
@@ -50,7 +51,7 @@ function getChannel(req) {
     return slack.channels.info({channel: req.query.channel})
       .then((res) => {
         console.log(`CHANNEL #${res.channel.name}`);
-        redirect.channel = res.channel;
+        channel = res.channel;
         return req;
       })
       .catch((err) => {
@@ -64,7 +65,7 @@ function getChannel(req) {
     return slack.groups.info({channel: req.query.channel})
       .then((res) => {
         console.log(`CHANNEL #${res.group.name}`);
-        redirect.channel = res.group;
+        channel = res.group;
         return req;
       })
       .catch((err) => {
@@ -87,7 +88,7 @@ function getUser(req) {
   return slack.users.info({user: req.query.user})
     .then((res) => {
       console.log(`USER @${res.user.profile.display_name}`);
-      redirect.user = res.user;
+      user = res.user;
       return req;
     })
     .catch((err) => {
@@ -103,7 +104,7 @@ function getUser(req) {
  */
 function verifyRequest(req) {
   // TODO
-  if (redirect.channel.members.indexOf(redirect.user.id) < 0) throw new Error('USER NOT PERMITTED');
+  if (channel.members.indexOf(user.id) < 0) throw new Error('USER NOT PERMITTED');
   return req;
 }
 
@@ -116,25 +117,25 @@ function findOrCreateFolder(req) {
 
   // Search for folder by channel ID in `appProperties`
   return drive.files.list({
-      q: `appProperties has { key='channel' and value='${redirect.channel.id}' }`
+      q: `appProperties has { key='channel' and value='${channel.id}' }`
     })
     .then((res) => {
 
       // Create folder and return
       if (res.data.files.length === 0) {
-        console.log(`CREATING FOLDER #${redirect.channel.name}`);
+        console.log(`CREATING FOLDER #${channel.name}`);
         return drive.files.create({
             resource: {
-              name: `#${redirect.channel.name}`,
+              name: `#${channel.name}`,
               mimeType: mimeTypeFolder,
               folderColorRgb: red,
               appProperties: {
-                channel: redirect.channel.id
+                channel: channel.id
               }
             }
           })
           .then((res) => {
-            redirect.folder = res.data;
+            folder = res.data;
             return req;
           })
           .catch((err) => {
@@ -144,8 +145,8 @@ function findOrCreateFolder(req) {
       }
 
       // Return if folder exists
-      console.log(`FOUND FOLDER #${redirect.channel.name}`);
-      res.data.files.map((x) => { redirect.folder = x; });
+      console.log(`FOUND FOLDER #${channel.name}`);
+      res.data.files.map((x) => { folder = x; });
       return req;
     })
     .catch((err) => {
@@ -162,17 +163,17 @@ function findOrCreateFolder(req) {
 function addPermission(req) {
 
   return drive.permissions.create({
-      fileId: redirect.folder.id,
+      fileId: folder.id,
       sendNotificationEmail: false,
       resource: {
         role: 'writer',
         type: 'user',
-        emailAddress: redirect.user.profile.email
+        emailAddress: user.profile.email
       }
     })
     .then((res) => {
       console.log(`GRANTED ${JSON.stringify(res.data)}`);
-      redirect.permission = res.data;
+      permission = res.data;
       return req;
     });
 }
@@ -184,8 +185,8 @@ function addPermission(req) {
  * @param {object} res Cloud Function response context.
  */
 function sendRedirect(req, res) {
-  console.log(`REDIRECTING TO ${prefix}${redirect.folder.id}`);
-  res.redirect(`${prefix}${redirect.folder.id}`);
+  console.log(`REDIRECTING TO ${prefix}${folder.id}`);
+  res.redirect(`${prefix}${folder.id}`);
 }
 
 /**
