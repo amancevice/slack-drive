@@ -12,44 +12,51 @@
     "text": "Members of ${channel} have access to a private Google Drive.\nInvite other members into this channel to give them access!",
     "attachments": [
       {
-        "color": "warning",
-        "title": "Caveats",
-        "text": "This tool works best if the email you used to sign up for Slack is the same as the one you use for Google Drive."
-      },
-      {
-        "color": "danger",
+        "color": "${color}",
         "title": "Directions",
-        "mrkdwn_in": [
-          "text"
-        ],
         "text": "Use the `/${cmd}` command in any channel.\n`/${cmd} help` will show this message.\n`/${cmd} link` will fetch the link to Google Drive.",
         "footer": "Slack | Google Drive",
-        "ts": "${ts}"
+        "ts": "${ts}",
+        "mrkdwn_in": [
+          "text"
+        ]
+      },
+      {
+        "color": "warning",
+        "title": "Caveats",
+        "text": "This tool works best if the email you used to sign up for Slack is the same as the one you use for Google Drive.",
+        "actions": [
+          {
+            "type": "button",
+            "text": "Change Slack Email",
+            "url": "https://${team}.slack.com/account/settings#email"
+          }
+        ]
       }
     ]
   },
   "link": {
     "attachments": [
       {
+        "color": "warning",
+        "text": "This tool works best if the email you used to sign up for Slack is the same as the one you use for Google Drive."
+      },
+      {
         "color": "good",
-        "text": "Here is a link to ${channel} in Google Drive",
-        "mrkdwn_in": [
-          "text"
-        ],
+        "text": "",
         "actions": [
           {
             "style": "primary",
             "type": "button",
             "text": "Google Drive",
             "url": "${url}"
+          },
+          {
+            "type": "button",
+            "text": "Change Slack Email",
+            "url": "https://${team}.slack.com/account/settings#email"
           }
         ]
-      },
-      {
-        "color": "warning",
-        "text": "This tool works best if the email you used to sign up for Slack is the same as the one you use for Google Drive.",
-        "footer": "Slack | Google Drive",
-        "ts": "${ts}"
       }
     ]
   },

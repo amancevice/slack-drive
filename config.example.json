@@ -1,6 +1,7 @@
 {
   "app": {
-    "channel": "<channel-id>"
+    "channel": "<channel-id>",
+    "color": "<#color-code>"
   },
   "cloud": {
     "project_id": "<project-id>",

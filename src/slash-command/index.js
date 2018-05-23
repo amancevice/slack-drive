@@ -105,6 +105,8 @@ function getResponse(req) {
     return Promise.resolve(messages.help.interpolate({
       channel: req.body.channel_id[0] === 'C' ? `<#${req.body.channel_id}>` : 'this channel',
       cmd: config.slack.slash_command,
+      color: config.app.color,
+      team: req.body.team_domain,
       ts: new Date()/1000,
     }));
   }
@@ -114,7 +116,9 @@ function getResponse(req) {
     return Promise.resolve(messages.link.interpolate({
       channel: req.body.channel_id[0] === 'C' ? `<#${req.body.channel_id}>` : 'this channel',
       cmd: config.slack.slash_command,
+      color: config.app.color,
       ts: new Date()/1000,
+      team: req.body.team_domain,
       url: `${config.slack.redirect_url}?channel=${req.body.channel_id}&user=${req.body.user_id}`,
     }));
   }
@@ -127,7 +131,7 @@ function getResponse(req) {
  * @param {object} res Cloud Function response context.
  */
 function sendResponse(msg, res) {
-  console.log(msg)
+  console.log(JSON.stringify(msg))
   res.json(msg);
 }
 
@@ -138,7 +142,7 @@ function sendResponse(msg, res) {
  * @param {object} res Cloud Function response context.
  */
 function sendError(err, res) {
-  console.error(err);
+  console.error(JSON.stringify(err));
   res.json(err);
 }
 
