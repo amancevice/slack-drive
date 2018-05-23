@@ -17,7 +17,7 @@ const red = '#f83a22';
 const prefix = 'https://drive.google.com/drive/u/0/folders/';
 
 Object.prototype.interpolate = function(mapping) {
-  let that = this;
+  let that = JSON.parse(JSON.stringify(this));
   Object.keys(mapping).map((k) => {
     that = JSON.parse(JSON.stringify(that)
       .replace(new RegExp(`\\$\\{${k}\\}`, 'g'), mapping[k]));
