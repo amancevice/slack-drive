@@ -1,13 +1,17 @@
 const config = require('./config.json');
 const messages = require('./messages.json');
-const subcommands = ['', 'help', 'link'];
 
 Object.prototype.interpolate = function(mapping) {
+  // Copy this
   let that = JSON.parse(JSON.stringify(this));
+
+  // Replace `${key}` with `value`
   Object.keys(mapping).map((k) => {
     that = JSON.parse(JSON.stringify(that)
       .replace(new RegExp(`\\$\\{${k}\\}`, 'g'), mapping[k]));
   });
+
+  // Return copy
   return that;
 }
 
@@ -23,7 +27,7 @@ function logRequest(req) {
     user_id: req.body.user_id,
     text: req.body.text
   })}`);
-  return Promise.resolve(req);
+  return req;
 }
 
 /**
@@ -33,9 +37,37 @@ function logRequest(req) {
  */
 function verifyToken(req) {
   // Verify token
-
   if (!req.body || req.body.token !== config.slack.verification_token) {
-    return Promise.reject(messages.bad_token);
+    const error = new Error('Invalid credentials');
+    error.code = 401;
+    throw error;
+  }
+  return req;
+}
+
+/**
+ * Verify request contains permitted user.
+ *
+ * @param {object} req Cloud Function request context.
+ */
+function verifyUser(req) {
+  console.log(req.body.user_id);
+  if (config.slack.users.excluded.indexOf(req.body.user_id) >= 0 ||  // *not* excluded
+      (config.slack.users.included.length > 0 &&                     // non-empty included
+       config.slack.users.included.indexOf(req.body.user_id) < 0)) { // not included
+    return Promise.reject(messages.bad_user);
+  }
+  return Promise.resolve(req);
+}
+
+/**
+ * Verify request contains valid channel.
+ *
+ * @param {object} req Cloud Function request context.
+ */
+function verifyChannel(req) {
+  if (req.body.channel_id[0] !== 'C' && req.body.channel_id[0] !== 'G') {
+    return Promise.reject(messages.bad_channel);
   }
   return Promise.resolve(req);
 }
@@ -46,57 +78,37 @@ function verifyToken(req) {
  * @param {object} req Cloud Function request context.
  */
 function verifyText(req) {
-  if (subcommands.indexOf(req.body.text) < 0) {
+  if (messages[req.body.text || 'help'] === undefined) {
     return Promise.reject(messages.bad_text.interpolate({
-      cmd: config.slack.slash_command
+      cmd: config.slack.slash_command,
     }));
   }
-  return req;
-}
-
-/**
- * Determine if user is permitted to use this service.
- *
- * @param {object} req Cloud Function request context.
- */
-function userPermitted(req) {
-  return config.slack.users.excluded.indexOf(req.body.user_id) < 0 && // *not* excluded
-        (config.slack.users.included.length === 0 ||                  // no includes
-         config.slack.users.included.indexOf(req.body.user_id) >= 0); // explicit include
-}
-
-/**
- * Verify request contains permitted user.
- *
- * @param {object} req Cloud Function request context.
- */
-function verifyUser(req) {
-  if (req.body.text !== 'help' && !userPermitted(req)) {
-    return Promise.reject(messages.not_permitted);
-  }
   return Promise.resolve(req);
 }
 
 /**
- * Verify channel is public or private.
+ * Get response message.
  *
  * @param {object} req Cloud Function request context.
  */
-function validChannel(req) {
-  return req.body.channel_id[0] === 'C' ||
-         req.body.channel_id[0] === 'G'
+function getMessage(req) {
+  return Promise.resolve(messages[req.body.text || 'help'].interpolate({
+    channel: req.body.channel_id[0] === 'C' ? `<#${req.body.channel_id}>` : 'this channel',
+    cmd: config.slack.slash_command,
+    color: config.app.color,
+    ts: new Date()/1000,
+    team: req.body.team_domain,
+    url: `${config.slack.redirect_url}?channel=${req.body.channel_id}&user=${req.body.user_id}`,
+  }));
 }
 
 /**
- * Verify request contains valid channel.
+ * Get error message.
  *
- * @param {object} req Cloud Function request context.
+ * @param {object} msg Error message.
  */
-function verifyChannel(req) {
-  if (!validChannel(req)) {
-    return Promise.reject(messages.bad_channel);
-  }
-  return Promise.resolve(req);
+function getError(msg) {
+  return Promise.resolve(msg);
 }
 
 /**
@@ -105,30 +117,12 @@ function verifyChannel(req) {
  * @param {object} req Cloud Function request context.
  */
 function getResponse(req) {
-  // drive (help)
-  if (req.body.text === '' || req.body.text === 'help') {
-    return Promise.resolve(messages.help.interpolate({
-      channel: req.body.channel_id[0] === 'C' ? `<#${req.body.channel_id}>` : 'this channel',
-      cmd: config.slack.slash_command,
-      color: config.app.color,
-      team: req.body.team_domain,
-      ts: new Date()/1000,
-    }));
-  }
-
-  // drive link
-  else if (req.body.text === 'link') {
-    return Promise.resolve(messages.link.interpolate({
-      channel: req.body.channel_id[0] === 'C' ? `<#${req.body.channel_id}>` : 'this channel',
-      cmd: config.slack.slash_command,
-      color: config.app.color,
-      ts: new Date()/1000,
-      team: req.body.team_domain,
-      url: `${config.slack.redirect_url}?channel=${req.body.channel_id}&user=${req.body.user_id}`,
-    }));
-  }
-
-  return Promise.reject(messages.bad_text);
+  return Promise.resolve(req)
+    .then(verifyUser)
+    .then(verifyChannel)
+    .then(verifyText)
+    .then(getMessage)
+    .catch(getError);
 }
 
 /**
@@ -149,8 +143,9 @@ function sendResponse(msg, res) {
  * @param {object} res Cloud Function response context.
  */
 function sendError(err, res) {
-  console.error(JSON.stringify(err));
-  res.json(err);
+  console.error(err);
+  res.status(err.code || 500).send(err);
+  return Promise.reject(err);
 }
 
 /**
@@ -164,9 +159,6 @@ exports.slashCommand = (req, res) => {
   Promise.resolve(req)
     .then(logRequest)
     .then(verifyToken)
-    .then(verifyChannel)
-    .then(verifyUser)
-    .then(verifyText)
     .then(getResponse)
     .then((msg) => sendResponse(msg, res))
     .catch((err) => sendError(err, res));

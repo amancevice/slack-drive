@@ -8,6 +8,9 @@
   "bad_text": {
     "text": ":thinking_face: Hmm, I don't know that command... Try `/${cmd} help`"
   },
+  "bad_user": {
+    "text": ":crying_cat_face: Sorry, you aren't allowed to do this yet."
+  },
   "help": {
     "text": "Members of ${channel} have access to a private Google Drive.\nInvite other members into this channel to give them access!",
     "attachments": [
@@ -59,8 +62,5 @@
         ]
       }
     ]
-  },
-  "not_permitted": {
-    "text": ":crying_cat_face: Sorry, you aren't allowed to do this yet."
   }
 }
