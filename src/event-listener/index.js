@@ -22,7 +22,6 @@ function verifyToken(req) {
     error.code = 401;
     throw error;
   }
-
   return req;
 }
 

@@ -38,7 +38,7 @@ function logRequest(req) {
 function verifyToken(req) {
   // Verify token
   if (!req.body || req.body.token !== config.slack.verification_token) {
-    const error = new Error('Invalid credentials');
+    const error = new Error('Invalid Credentials');
     error.code = 401;
     throw error;
   }
