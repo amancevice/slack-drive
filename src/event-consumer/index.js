@@ -34,10 +34,6 @@ String.prototype.titlize = function() {
   }).join(' ');
 }
 
-String.prototype.tickwrap = function() {
-  return `\`\`\`${this}\`\`\``;
-}
-
 /**
  * Log PubSub message.
  *
@@ -309,7 +305,7 @@ function postRecord(e) {
   record = messages.records.success.interpolate({
     channel: e.event.channel_type === 'C' ? `<#${channel.id}>` : `#${channel.name}`,
     cmd: config.slack.slash_command,
-    event: JSON.stringify(e.event).replace(/"/g, '\\"').tickwrap(),
+    event: JSON.stringify(e.event).replace(/"/g, '\\"'),
     title: e.event.type.titlize(),
     ts: e.event.event_ts,
     user: e.event.user === undefined ? 'N/A' : `<@${e.event.user}>`
@@ -317,7 +313,7 @@ function postRecord(e) {
   record.channel = config.app.channel;
 
   // Post record message
-  console.log('POSTING RECORD');
+  console.log(`POSTING RECORD ${JSON.stringify(record)}`);
   return slack.chat.postMessage(record)
     .then((res) => { return e; })
     .catch((err) => { console.error(JSON.stringify(err)); throw err; });
@@ -334,13 +330,14 @@ function postError(err, e) {
   const error = messages.records.error.interpolate({
     error_message: err.message,
     error_name: err.name,
-    event: JSON.stringify(e).replace(/"/g, '\\"').tickwrap(),
-    stack: err.stack.replace(/\n/g, '\\n').tickwrap(),
+    event: JSON.stringify(e).replace(/"/g, '\\"'),
+    stack: err.stack.replace(/\n/g, '\\n'),
     ts: new Date()/1000
   });
   error.channel = config.app.channel;
 
   // Post error message back to Slack
+  console.error(`POSTING ERROR ${JSON.stringify(error)}`);
   slack.chat.postMessage(error);
 
   throw err;

@@ -24,10 +24,6 @@ String.prototype.titlize = function() {
   }).join(' ');
 }
 
-String.prototype.tickwrap = function() {
-  return `\`\`\`${this}\`\`\``;
-}
-
 /**
  * Log request info.
  *

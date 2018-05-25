@@ -15,11 +15,11 @@
             },
             {
               "title": "Stacktrace",
-              "value": "${stack}"
+              "value": "```${stack}```"
             },
             {
               "title": "Event",
-              "value": "${event}"
+              "value": "```${event}```"
             }
           ],
           "footer": "Slack | Google Drive",
@@ -45,7 +45,7 @@
             },
             {
               "title": "Event",
-              "value": "${event}"
+              "value": "```${event}```"
             }
           ],
           "footer": "Slack | Google Drive",
