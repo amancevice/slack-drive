@@ -244,6 +244,66 @@ function addPermission(e) {
 }
 
 /**
+ * Rename a Google Drive folder
+ *
+ * @param {object} e Slack event object message.
+ * @param {object} e.event Slack event object.
+ */
+function renameOrCreateFolder(e) {
+  // Search for folder by channel ID in `appProperties`
+  return drive.files.list({
+      q: `appProperties has { key='channel' and value='${channel.id}' }`
+    })
+    .then((res) => {
+
+      // Create folder and return
+      if (res.data.files.length === 0) {
+        console.log(`CREATING FOLDER #${channel.name}`);
+        return drive.files.create({
+            resource: {
+              name: `#${channel.name}`,
+              mimeType: mimeTypeFolder,
+              folderColorRgb: red,
+              appProperties: {
+                channel: channel.id
+              }
+            }
+          })
+          .then((res) => {
+            folder = res.data;
+            return e;
+          })
+          .catch((err) => {
+            console.error(err);
+            throw err;
+          });
+      }
+
+      // Rename folder
+      res.data.files.map((x) => { folder = x; });
+      console.log(`RENAMING FOLDER ${folder.name} => #${channel.name}`);
+      return drive.files.update({
+          fileId: folder.id,
+          resource: {
+            name: `#${channel.name}`
+          }
+        })
+        .then((res) => {
+          folder = res.data;
+          return e;
+        })
+        .catch((err) => {
+          console.error(err);
+          throw err;
+        });;
+    })
+    .catch((err) => {
+      console.error(err);
+      throw err;
+    });
+}
+
+/**
  * Post ephemeral message back to the user with info about Google Drive.
  *
  * @param {object} e Slack event object message.
@@ -361,11 +421,17 @@ function processEvent(e) {
 
   // User event, but user is not permitted to evoke event
   else if (userEvent(e)) {
-    e.event.type = `${e.event.type} (Testing Only)`
+    e.event.type = `${e.event.type} (Testing Only)`;
     return Promise.resolve(e).then(getUser);
   }
 
-  return Promise.resolve(e);
+  // Channel event TODO
+  else if (e.event.type === 'channel_rename') {
+    return Promise.resolve(e).then(renameOrCreateFolder);
+  }
+
+  // Error
+  throw new Error('Unhandled Event Type');
 }
 
 /**
