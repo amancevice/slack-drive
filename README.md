@@ -5,6 +5,10 @@
 Create & share Google Docs using Slack channels and Google Drive.
 
 ## Architecture
+
+<img src="https://github.com/amancevice/slack-drive/raw/master/docs/images/arch.png" width=500></img>
+
+
 This application makes use of “serverless” architecture to interact with a Slack bot through Slack’s Web & Events API using slash commands and event subscriptions. In toto, four cloud functions comprise the application’s core functionality: three HTTP endpoints and one subscription-based event processor.
 
 Google Cloud is a natural back-end for this application and this document is written with that assumption, but there is no reason the concepts cannot be applied to another back-end, like AWS.
