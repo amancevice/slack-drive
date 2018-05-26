@@ -6,9 +6,6 @@ Create & share Google Docs using Slack channels and Google Drive.
 
 ## Architecture
 
-<img src="https://github.com/amancevice/slack-drive/raw/master/docs/images/arch.png" width=500></img>
-
-
 This application makes use of “serverless” architecture to interact with a Slack bot through Slack’s Web & Events API using slash commands and event subscriptions. In toto, four cloud functions comprise the application’s core functionality: three HTTP endpoints and one subscription-based event processor.
 
 Google Cloud is a natural back-end for this application and this document is written with that assumption, but there is no reason the concepts cannot be applied to another back-end, like AWS.
@@ -33,3 +30,5 @@ In addition to listening for events, a user may trigger the workflow to access a
 Typing `/drive` or `/drive help` from a given channel will send an ephemeral message to the user with instructions on how to use the tool.
 
 Typing `/drive link` will send an ephemeral message to the user with a link to the channel’s folder in Google Drive. Because of the aforementioned three-second rule the link to Google Drive is routed through a different Cloud Function that grants access to the requesting user in real-time, but without a strict time limit. Like the event consumer Cloud Function, the process of redirecting the user is done by searching-for or creating the channel’s folder in Google Drive, adding the Slack user as a collaborator by email, and finally redirecting the request to the given Google Drive URL. The redirection HTTP endpoint accepts the query parameters `channel` and `user`. The given user must be a member of the given channel at the time of the request for the redirection to succeed.
+
+<img src="https://github.com/amancevice/slack-drive/raw/master/docs/images/arch.png"></img>
