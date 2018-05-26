@@ -1,5 +1,5 @@
 {
-  "name": "slack-drive-event-listener",
+  "name": "slack-drive-event-publisher",
   "version": "0.0.1",
   "description": "Publish Slack events to a PubSub topic",
   "main": "index.js",
