@@ -32,3 +32,36 @@ Typing `/drive` or `/drive help` from a given channel will send an ephemeral mes
 Typing `/drive link` will send an ephemeral message to the user with a link to the channel’s folder in Google Drive. Because of the aforementioned three-second rule the link to Google Drive is routed through a different Cloud Function that grants access to the requesting user in real-time, but without a strict time limit. Like the event consumer Cloud Function, the process of redirecting the user is done by searching-for or creating the channel’s folder in Google Drive, adding the Slack user as a collaborator by email, and finally redirecting the request to the given Google Drive URL. The redirection HTTP endpoint accepts the query parameters `channel` and `user`. The given user must be a member of the given channel at the time of the request for the redirection to succeed.
 
 <img src="https://github.com/amancevice/slack-drive/raw/master/docs/images/arch.png"></img>
+
+## Google Cloud
+Terraform modules are provided to help deploy the supporting infrastructure for this application, but some manual setup is required.
+
+### Setup
+
+In order to access Google Cloud services you will need to creat a **project** and a **service account** that has edit access for the project.
+ 
+### Deployment
+
+After setting up your Google Cloud project, service account and generating a credentials file, terraform can be used to deploy & manage your infrastructure. This recipe requires and/or deploys:
+
+* One Cloud Storage bucket (for hosting the Cloud Function package archives)
+* Four Cloud Function configurations; three triggered by HTTPS, one by Pub/Sub.
+* One Pub/Sub topic for processing Slack events.
+
+Create a file called `deploy.tf` (the name is not important, but be careful not to commit secrets to public repositories). It’s contents should look like the text below with the proper values for each item.
+
+```
+module "slack_drive_cloud" {
+  source                         = "git::git@github.com:amancevice/slack-drive//terraform/cloud"
+  google_project_id              = "my-project-123456"
+  google_region                  = "us-central1"
+  google_credentials             = "${file("client_secret.json")}"
+  bucket_name                    = "my-project-slack-drive"
+  event_consumer_archive_source  = "./dist/slack-drive-event-consumer-0.0.1.zip"
+  event_publisher_archive_source = "./dist/slack-drive-event-publisher-0.0.1.zip"
+  redirect_archive_source        = "./dist/slack-drive-redirect-0.0.1.zip"
+  slash_command_archive_source   = "./dist/slack-drive-slash-command-0.0.1.zip"
+}
+```
+
+Run `terraform plan` to view the expected execution of terraform. Import any existing infrastructure (like the bucket) using `terraform import`. Repeat until you are satisfied that the actions terraform will take are expected and run `terraform apply` to bring up the required infrastructure.
