@@ -1,4 +1,7 @@
 # Slack Drive
+
+<img src="https://github.com/amancevice/slack-drive/raw/master/docs/images/slack-drive-800x800.png" width=200 height=200></img>
+
 Create & share Google Docs using Slack channels and Google Drive.
 
 ## Architecture
@@ -13,7 +16,7 @@ Slack Drive listens for four event types issued from Slack’s Event API:
 * `member_joined_channel` when a member joins a channel
 * `member_left_channel` when a member leaves a channel
 
-Slack events are handled using an HTTP endpoint and a subscription-based events processor. Slack imposes a three-second time limit for responses to requests made by Slack. Because of limitations inherent to the “serverless” pattern (where “cold start” time of applications is a factor) events received are handed off to a queue that can be consumed by an external process. In other words, the concerns of responding to Slack events and processing said event are separated into two distinct Cloud Functions. 
+Slack events are handled using an HTTP endpoint and a subscription-based events processor. Slack imposes a three-second time limit for responses to requests made by Slack. Because of limitations inherent to the “serverless” pattern (where “cold start” time of applications is a factor) events received are handed off to a queue that can be consumed by an external process. In other words, the concerns of responding to Slack events and processing said event are separated into two distinct Cloud Functions.
 
 The code providing the HTTP endpoint simply publishes the event to a Pub/Sub topic (similar to SNS in Amazon lingo) after verifying that the request was received with the correct validation token. Messages to Pub/Sub are Base64-encoded JSON strings of the Slack event as they are transmitted by the Events API.
 
