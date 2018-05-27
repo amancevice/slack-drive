@@ -4,6 +4,14 @@
 
 Create & share Google Docs using Slack channels and Google Drive.
 
+## Overview
+
+This application aims to provide Slack teams with a private folder in Google Drive for each channel in the workspace. Members of each channel are given access to the channel's folder using the email address associated with his/her Slack account. This function aims to reduce the use of to Google Docs' "share by link" feature because it is inherently insecure.
+
+Team members are added as collaborators simply by joining the channel or by initiating a custom slash command within said channel. Leaving a channel will remove the user from the set of collaborators for that channel's files in Google Drive.
+
+Users can be explicitly _excluded_ (like bots) or _included_ (for beta-testing, perhaps) from consideration using a [configuration](./config.example.json) file, where the access keys and other configuration options are stored.
+
 ## Architecture
 
 This application makes use of “serverless” architecture to interact with a Slack bot through Slack’s Web & Events API using slash commands and event subscriptions. In toto, four cloud functions comprise the application’s core functionality: three HTTP endpoints and one subscription-based event processor.
@@ -48,20 +56,18 @@ After setting up your Google Cloud project, service account and generating a cre
 * Four Cloud Function configurations; three triggered by HTTPS, one by Pub/Sub.
 * One Pub/Sub topic for processing Slack events.
 
-Create a file called `deploy.tf` (the name is not important, but be careful not to commit secrets to public repositories). It’s contents should look like the text below with the proper values for each item.
+Create a file called `deploy.tf` (the name is not important, but be careful not to commit secrets to public repositories). At minimum, its contents should look like the text below with the proper values for each item.
 
 ```
 module "slack_drive_cloud" {
-  source                         = "git::git@github.com:amancevice/slack-drive//terraform/cloud"
-  google_project_id              = "my-project-123456"
-  google_region                  = "us-central1"
-  google_credentials             = "${file("client_secret.json")}"
-  bucket_name                    = "my-project-slack-drive"
-  event_consumer_archive_source  = "./dist/slack-drive-event-consumer-0.0.1.zip"
-  event_publisher_archive_source = "./dist/slack-drive-event-publisher-0.0.1.zip"
-  redirect_archive_source        = "./dist/slack-drive-redirect-0.0.1.zip"
-  slash_command_archive_source   = "./dist/slack-drive-slash-command-0.0.1.zip"
+  source            = "git::git@github.com:amancevice/slack-drive//terraform/cloud"
+  cloud_credentials = "${file("client_secret.json")}"
+  cloud_project_id  = "my-project-123456"
+  cloud_region      = "us-central1"
+  bucket_name       = "my-project-slack-drive"
 }
 ```
 
-Run `terraform plan` to view the expected execution of terraform. Import any existing infrastructure (like the bucket) using `terraform import`. Repeat until you are satisfied that the actions terraform will take are expected and run `terraform apply` to bring up the required infrastructure.
+Run `terraform apply` to review & apply the resources for the application. Import any existing infrastructure (like the bucket) using `terraform import`.
+
+Review the [variables](./terraform/cloud/variables.tf) file for additional configuration options, if needed.
