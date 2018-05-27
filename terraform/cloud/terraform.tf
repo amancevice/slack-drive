@@ -1,3 +1,21 @@
+provider "google" {
+  credentials = "${var.cloud_credentials}"
+  project     = "${var.cloud_project}"
+  region      = "${var.cloud_region}"
+}
+
+variable "cloud_credentials" {
+  description = "Contents of the JSON file used to describe your account credentials, downloaded from Google Cloud Console."
+}
+
+variable "cloud_project" {
+  description = "The ID of the project to apply any resources to."
+}
+
+variable "cloud_region"{
+  description = "The region to operate under, if not specified by a given resource."
+}
+
 variable "bucket_name" {
   description = "Cloud Storage bucket for storing Cloud Function code archives"
 }
