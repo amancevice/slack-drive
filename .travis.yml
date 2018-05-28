@@ -2,14 +2,12 @@ language: node_js
 node_js:
 - '6'
 script:
-- node build.js
-after_success:
-- ls -l dist
+- gulp build
 deploy:
 - provider: releases
   api_key:
     secure: fK4zKKX/lxnKsAPabeHyoaKtCHkBFyFM2SP+NepjXfFJEkb8HqwFGLcwowNAZh1l4nSyeYiXSd4qYr6L2TCnRVdPT6FSxqkcpQkVOEE5ZZOSmn6HmD+uqoCfhTErTEr/7ge0Z+uiOArVObakpCuXFtsYix7lKRehfF6mzAlBfBlUaqekdNrgNHAUZKY1vaYdNoaCzoYpP6yfpF7h2c7R3NIlw/aGTVIwiunBi95mdDG1LuBkoqngGK6QIv8GTN4idqM7zQ3Cp35Xb0UGV9jEcnWohwcJX/tpCFbx9NlXgG5E9jKA4OEzKDlJbLnR4If2oKhEHKfX3mI54n+12s8cuN9QljlxMUdHWV23eqX2yKapShlxq5Sa9Lm8GCnjDW3q0/OLZmh3AOFqkTmyjbN5ZlE10J1w1yBp6CV04Rp+dxYtaF43eNf0XwIZG32lOGMHeMTEo+4KcK63aAVY7QWACRLSEGaCYPTNWtvBvUeKN/xbJdEhSBUl9bx9PFrvNhX8wRd6/CM2h10nfLZzl4p2EI3UbyqV586AnkIOuzI0n+Ym8LJKrdXzbiOwjtsxZCZ+0j5CDtOyv4u4FwT2EVXVNh5UoHmbquFWcwWDn7RyeCmRWXnEevq8U+zBWDJsaPtbm98dXHk8CCh3PM9j1fc0N7Ueo1LIYMI7USP+MOoX50Y=
-  file: dist/slack-drive-event-consumer-${TRAVIS_TAG}.zip
+  file: build/slack-drive-event-consumer-${TRAVIS_TAG}.zip
   skip_cleanup: true
   on:
     repo: amancevice/slack-drive
@@ -17,7 +15,7 @@ deploy:
 - provider: releases
   api_key:
     secure: fK4zKKX/lxnKsAPabeHyoaKtCHkBFyFM2SP+NepjXfFJEkb8HqwFGLcwowNAZh1l4nSyeYiXSd4qYr6L2TCnRVdPT6FSxqkcpQkVOEE5ZZOSmn6HmD+uqoCfhTErTEr/7ge0Z+uiOArVObakpCuXFtsYix7lKRehfF6mzAlBfBlUaqekdNrgNHAUZKY1vaYdNoaCzoYpP6yfpF7h2c7R3NIlw/aGTVIwiunBi95mdDG1LuBkoqngGK6QIv8GTN4idqM7zQ3Cp35Xb0UGV9jEcnWohwcJX/tpCFbx9NlXgG5E9jKA4OEzKDlJbLnR4If2oKhEHKfX3mI54n+12s8cuN9QljlxMUdHWV23eqX2yKapShlxq5Sa9Lm8GCnjDW3q0/OLZmh3AOFqkTmyjbN5ZlE10J1w1yBp6CV04Rp+dxYtaF43eNf0XwIZG32lOGMHeMTEo+4KcK63aAVY7QWACRLSEGaCYPTNWtvBvUeKN/xbJdEhSBUl9bx9PFrvNhX8wRd6/CM2h10nfLZzl4p2EI3UbyqV586AnkIOuzI0n+Ym8LJKrdXzbiOwjtsxZCZ+0j5CDtOyv4u4FwT2EVXVNh5UoHmbquFWcwWDn7RyeCmRWXnEevq8U+zBWDJsaPtbm98dXHk8CCh3PM9j1fc0N7Ueo1LIYMI7USP+MOoX50Y=
-  file: dist/slack-drive-event-publisher-${TRAVIS_TAG}.zip
+  file: build/slack-drive-event-publisher-${TRAVIS_TAG}.zip
   skip_cleanup: true
   on:
     repo: amancevice/slack-drive
@@ -25,7 +23,7 @@ deploy:
 - provider: releases
   api_key:
     secure: fK4zKKX/lxnKsAPabeHyoaKtCHkBFyFM2SP+NepjXfFJEkb8HqwFGLcwowNAZh1l4nSyeYiXSd4qYr6L2TCnRVdPT6FSxqkcpQkVOEE5ZZOSmn6HmD+uqoCfhTErTEr/7ge0Z+uiOArVObakpCuXFtsYix7lKRehfF6mzAlBfBlUaqekdNrgNHAUZKY1vaYdNoaCzoYpP6yfpF7h2c7R3NIlw/aGTVIwiunBi95mdDG1LuBkoqngGK6QIv8GTN4idqM7zQ3Cp35Xb0UGV9jEcnWohwcJX/tpCFbx9NlXgG5E9jKA4OEzKDlJbLnR4If2oKhEHKfX3mI54n+12s8cuN9QljlxMUdHWV23eqX2yKapShlxq5Sa9Lm8GCnjDW3q0/OLZmh3AOFqkTmyjbN5ZlE10J1w1yBp6CV04Rp+dxYtaF43eNf0XwIZG32lOGMHeMTEo+4KcK63aAVY7QWACRLSEGaCYPTNWtvBvUeKN/xbJdEhSBUl9bx9PFrvNhX8wRd6/CM2h10nfLZzl4p2EI3UbyqV586AnkIOuzI0n+Ym8LJKrdXzbiOwjtsxZCZ+0j5CDtOyv4u4FwT2EVXVNh5UoHmbquFWcwWDn7RyeCmRWXnEevq8U+zBWDJsaPtbm98dXHk8CCh3PM9j1fc0N7Ueo1LIYMI7USP+MOoX50Y=
-  file: dist/slack-drive-redirect-${TRAVIS_TAG}.zip
+  file: build/slack-drive-redirect-${TRAVIS_TAG}.zip
   skip_cleanup: true
   on:
     repo: amancevice/slack-drive
@@ -33,7 +31,7 @@ deploy:
 - provider: releases
   api_key:
     secure: fK4zKKX/lxnKsAPabeHyoaKtCHkBFyFM2SP+NepjXfFJEkb8HqwFGLcwowNAZh1l4nSyeYiXSd4qYr6L2TCnRVdPT6FSxqkcpQkVOEE5ZZOSmn6HmD+uqoCfhTErTEr/7ge0Z+uiOArVObakpCuXFtsYix7lKRehfF6mzAlBfBlUaqekdNrgNHAUZKY1vaYdNoaCzoYpP6yfpF7h2c7R3NIlw/aGTVIwiunBi95mdDG1LuBkoqngGK6QIv8GTN4idqM7zQ3Cp35Xb0UGV9jEcnWohwcJX/tpCFbx9NlXgG5E9jKA4OEzKDlJbLnR4If2oKhEHKfX3mI54n+12s8cuN9QljlxMUdHWV23eqX2yKapShlxq5Sa9Lm8GCnjDW3q0/OLZmh3AOFqkTmyjbN5ZlE10J1w1yBp6CV04Rp+dxYtaF43eNf0XwIZG32lOGMHeMTEo+4KcK63aAVY7QWACRLSEGaCYPTNWtvBvUeKN/xbJdEhSBUl9bx9PFrvNhX8wRd6/CM2h10nfLZzl4p2EI3UbyqV586AnkIOuzI0n+Ym8LJKrdXzbiOwjtsxZCZ+0j5CDtOyv4u4FwT2EVXVNh5UoHmbquFWcwWDn7RyeCmRWXnEevq8U+zBWDJsaPtbm98dXHk8CCh3PM9j1fc0N7Ueo1LIYMI7USP+MOoX50Y=
-  file: dist/slack-drive-slash-command-${TRAVIS_TAG}.zip
+  file: build/slack-drive-slash-command-${TRAVIS_TAG}.zip
   skip_cleanup: true
   on:
     repo: amancevice/slack-drive

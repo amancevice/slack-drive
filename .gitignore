@@ -58,6 +58,8 @@ typings/
 .env
 
 # slack-drive
-config.json
-client_secret.json
+build/
 dist/
+/config.json
+/client_secret.json
+/*.tf
