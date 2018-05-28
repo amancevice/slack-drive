@@ -47,7 +47,7 @@ Terraform modules are provided to help deploy the supporting infrastructure for 
 ### Setup
 
 In order to access Google Cloud services you will need to creat a **project** and a **service account** that has edit access for the project.
- 
+
 ### Deployment
 
 After setting up your Google Cloud project, service account and generating a credentials file, terraform can be used to deploy & manage your infrastructure. This recipe requires and/or deploys:
@@ -60,11 +60,12 @@ Create a file called `deploy.tf` (the name is not important, but be careful not 
 
 ```
 module "slack_drive_cloud" {
-  source            = "git::git@github.com:amancevice/slack-drive//terraform/cloud"
+  source            = "amancevice/slack-drive/google"
+  version           = "0.1.0"
+  bucket_name       = "my-project-slack-drive"
   cloud_credentials = "${file("client_secret.json")}"
   cloud_project_id  = "my-project-123456"
   cloud_region      = "us-central1"
-  bucket_name       = "my-project-slack-drive"
 }
 ```
 
