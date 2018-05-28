@@ -54,15 +54,10 @@ typings/
 # Yarn Integrity file
 .yarn-integrity
 
-# Config
-config.json
-
 # dotenv environment variables file
 .env
-.examples
 
-# Google
+# slack-drive
+config.json
 client_secret.json
-
-# Dist
 dist/
