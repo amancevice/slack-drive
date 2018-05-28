@@ -1,6 +1,6 @@
 # Slack Drive
 
-<img src="https://github.com/amancevice/slack-drive/raw/master/docs/images/slack-drive-800x800.png" width=200 height=200></img>
+<img src="https://github.com/amancevice/slack-drive/raw/master/docs/images/slack-drive-1200x1200.png" width=200 height=200></img>
 
 Create & share Google Docs using Slack channels and Google Drive.
 
@@ -66,6 +66,22 @@ module "slack_drive_cloud" {
   cloud_credentials = "${file("client_secret.json")}"
   cloud_project_id  = "my-project-123456"
   cloud_region      = "us-central1"
+}
+
+output "event_pubsub_topic" {
+  value = "${module.slack_drive_cloud.event_pubsub_topic}"
+}
+
+output "event_subscriptions_url" {
+  value = "${module.slack_drive_cloud.event_subscriptions_url}"
+}
+
+output "redirect_url" {
+  value = "${module.slack_drive_cloud.redirect_url}"
+}
+
+output "slash_command_url" {
+  value = "${module.slack_drive_cloud.slash_command_url}"
 }
 ```
 
