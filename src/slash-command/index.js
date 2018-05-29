@@ -55,7 +55,7 @@ function verifyUser(req) {
   if (config.slack.users.excluded.indexOf(req.body.user_id) >= 0 ||  // *not* excluded
       (config.slack.users.included.length > 0 &&                     // non-empty included
        config.slack.users.included.indexOf(req.body.user_id) < 0)) { // not included
-    return Promise.reject(messages.bad_user);
+    return Promise.reject(messages.slash_commands.bad_user);
   }
   return Promise.resolve(req);
 }
@@ -67,7 +67,7 @@ function verifyUser(req) {
  */
 function verifyChannel(req) {
   if (req.body.channel_id[0] !== 'C' && req.body.channel_id[0] !== 'G') {
-    return Promise.reject(messages.bad_channel);
+    return Promise.reject(messages.slash_commands.bad_channel);
   }
   return Promise.resolve(req);
 }
@@ -79,7 +79,7 @@ function verifyChannel(req) {
  */
 function verifyText(req) {
   if (messages[req.body.text || 'help'] === undefined) {
-    return Promise.reject(messages.bad_text.interpolate({
+    return Promise.reject(messages.slash_commands.bad_text.interpolate({
       cmd: config.slack.slash_command,
     }));
   }

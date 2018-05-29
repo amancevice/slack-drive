@@ -1,16 +1,5 @@
 {
-  "name": "slack-drive-event-publisher",
-  "version": "0.0.1",
-  "description": "Publish Slack events to a PubSub topic",
-  "main": "index.js",
   "dependencies": {
     "googleapis": "^29.0.0"
-  },
-  "scripts": {
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/amancevice/slack-drive.git"
-  },
-  "license": "MIT"
+  }
 }

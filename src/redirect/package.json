@@ -1,17 +1,6 @@
 {
-  "name": "slack-drive-redirect",
-  "version": "0.0.1",
-  "description": "Redirect users to Google Drive",
-  "main": "index.js",
   "dependencies": {
     "@slack/client": "^4.2.0",
     "googleapis": "^29.0.0"
-  },
-  "scripts": {
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/amancevice/slack-drive.git"
-  },
-  "license": "MIT"
+  }
 }

@@ -312,7 +312,7 @@ function renameOrCreateFolder(e) {
 function postResponse(e) {
 
   // Build message
-  response = messages.responses[e.event.type].interpolate({
+  response = messages.events[e.event.type].interpolate({
     channel: e.event.channel_type === 'C' ? `<#${channel.id}>` : `#${channel.name}`,
     cmd: config.slack.slash_command,
     color: config.app.color,
@@ -362,7 +362,7 @@ function postResponse(e) {
 function postRecord(e) {
 
   // Build message
-  record = messages.records.success.interpolate({
+  record = messages.log.success.interpolate({
     channel: e.event.channel_type === 'C' ? `<#${channel.id}>` : `#${channel.name}`,
     cmd: config.slack.slash_command,
     event: JSON.stringify(e.event).replace(/"/g, '\\"'),
@@ -387,7 +387,7 @@ function postRecord(e) {
  */
 function postError(err, e) {
   // Build message
-  const error = messages.records.error.interpolate({
+  const error = messages.log.error.interpolate({
     error_message: err.message,
     error_name: err.name,
     event: JSON.stringify(e).replace(/"/g, '\\"'),
