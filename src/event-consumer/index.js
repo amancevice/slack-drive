@@ -321,7 +321,7 @@ function postResponse(e) {
   response = messages.events[e.event.type].interpolate({
     channel: e.event.channel_type === 'C' ? `<#${channel.id}>` : `#${channel.name}`,
     cmd: config.slack.slash_command,
-    color: config.app.color,
+    color: config.slack.color,
     team: team.domain,
     ts: e.event.event_ts,
     url: `${prefix}${folder.id}`
@@ -376,7 +376,7 @@ function postRecord(e) {
     ts: e.event.event_ts,
     user: e.event.user === undefined ? 'N/A' : `<@${e.event.user}>`
   });
-  record.channel = config.app.channel;
+  record.channel = config.slack.channel;
 
   // Post record message
   console.log(`POSTING RECORD ${JSON.stringify(record)}`);
@@ -400,7 +400,7 @@ function postError(err, e) {
     stack: err.stack.replace(/\n/g, '\\n'),
     ts: new Date()/1000
   });
-  error.channel = config.app.channel;
+  error.channel = config.slack.channel;
 
   // Post error message back to Slack
   console.error(`POSTING ERROR ${JSON.stringify(error)}`);

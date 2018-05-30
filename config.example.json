@@ -1,8 +1,4 @@
 {
-  "app": {
-    "channel": "<channel-id>",
-    "color": "<#color-code>"
-  },
   "cloud": {
     "project_id": "<project-id>",
     "region": "us-central1",
@@ -13,6 +9,8 @@
   "slack": {
     "web_api_token": "<web-api-token>",
     "verification_token": "<verification-token>",
+    "channel": "<loggin-channel-id>",
+    "color": "<#color-code>",
     "slash_command": "<slash-command-name>",
     "users": {
       "excluded": [

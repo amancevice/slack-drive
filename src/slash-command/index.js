@@ -95,7 +95,7 @@ function getMessage(req) {
   return Promise.resolve(messages[req.body.text || 'help'].interpolate({
     channel: req.body.channel_id[0] === 'C' ? `<#${req.body.channel_id}>` : 'this channel',
     cmd: config.slack.slash_command,
-    color: config.app.color,
+    color: config.slack.color,
     ts: new Date()/1000,
     team: req.body.team_domain,
     url: `https://${config.cloud.region}-${config.cloud.project_id}.cloudfunctions.net/${config.cloud.redirect_function}?channel=${req.body.channel_id}&user=${req.body.user_id}`,
