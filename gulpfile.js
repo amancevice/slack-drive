@@ -4,6 +4,67 @@ const gulp = require('gulp');
 const file = require('gulp-file');
 const zip = require('gulp-zip');
 
+// Build event publisher
+gulp.task('build-event-publisher', () => {
+  let pack = require('./src/event-publisher/package.json');
+  pack.version = pkg.version;
+  return gulp.src('src/event-publisher/index.js')
+    .pipe(file('package.json', JSON.stringify(pack, null, 2)))
+    .pipe(gulp.dest('build/src/event-publisher'));
+});
+
+// Build event consumer
+gulp.task('build-event-consumer', () => {
+  let pack = require('./src/event-consumer/package.json');
+  pack.version = pkg.version;
+  return gulp.src(['src/event-consumer/index.js', 'src/messages.json'])
+    .pipe(file('package.json', JSON.stringify(pack, null, 2)))
+    .pipe(gulp.dest('build/src/event-consumer'));
+});
+
+// Build slash command
+gulp.task('build-slash-command', () => {
+  let pack = require('./src/slash-command/package.json');
+  pack.version = pkg.version;
+  return gulp.src(['src/slash-command/index.js', 'src/messages.json'])
+    .pipe(file('package.json', JSON.stringify(pack, null, 2)))
+    .pipe(gulp.dest('build/src/slash-command'));
+});
+
+// Build redirect
+gulp.task('build-redirect', () => {
+  let pack = require('./src/redirect/package.json');
+  pack.version = pkg.version;
+  return gulp.src(['src/redirect/index.js', 'src/messages.json'])
+    .pipe(file('package.json', JSON.stringify(pack, null, 2)))
+    .pipe(gulp.dest('build/src/redirect'));
+});
+
+// Build config example
+gulp.task('build-config', () => {
+  return gulp.src(['gulpfile.js', 'terraform.tf'])
+    .pipe(file('config.json', JSON.stringify(require('./config.example.json'), null, 2)))
+    .pipe(file('README', 'Deploying Slack Drive\n1. Update `config.json` with the correct API keys and options\n2. Download `client_secret.json` from the Google Cloud console and put in this directory.\n3. Optionally update `terraform.tf` with the correct values.\n4.Run `gulp dist` to build distribution packages.\n5. Run `terraform apply` to create the Slack Drive infrastructure.'))
+    .pipe(gulp.dest('build'));
+});
+
+// Zip build
+gulp.task('build-dist', () => {
+  return gulp.src('build/**')
+    .pipe(zip(`slack-drive-${pkg.version}.zip`))
+    .pipe(gulp.dest('dist'));
+});
+
+// Build artifacts
+gulp.task('build', gulp.series([
+  'build-event-publisher',
+  'build-event-consumer',
+  'build-slash-command',
+  'build-redirect',
+  'build-config',
+  'build-dist'
+]));
+
 // Verify config.json exists
 gulp.task('verify-config', () => {
   return new Promise((resolve, reject) => {
@@ -25,7 +86,7 @@ gulp.task('verify-client-secret', () => {
 });
 
 // Build event publisher
-gulp.task('build-event-publisher', () => {
+gulp.task('dist-event-publisher', () => {
   let pack = require('./src/event-publisher/package.json');
   pack.version = pkg.version;
   return gulp.src([
@@ -34,11 +95,12 @@ gulp.task('build-event-publisher', () => {
       'client_secret.json'
     ])
     .pipe(file('package.json', JSON.stringify(pack, null, 2)))
-    .pipe(gulp.dest('build/event-publisher'));
+    .pipe(zip(`slack-drive-event-publisher-${pkg.version}.zip`))
+    .pipe(gulp.dest('dist'));
 });
 
 // Build event consumer
-gulp.task('build-event-consumer', () => {
+gulp.task('dist-event-consumer', () => {
   let pack = require('./src/event-consumer/package.json');
   pack.version = pkg.version;
   return gulp.src([
@@ -48,11 +110,12 @@ gulp.task('build-event-consumer', () => {
       'client_secret.json'
     ])
     .pipe(file('package.json', JSON.stringify(pack, null, 2)))
-    .pipe(gulp.dest('build/event-consumer'));
+    .pipe(zip(`slack-drive-event-consumer-${pkg.version}.zip`))
+    .pipe(gulp.dest('dist'));
 });
 
 // Build slash command
-gulp.task('build-slash-command', () => {
+gulp.task('dist-slash-command', () => {
   let pack = require('./src/slash-command/package.json');
   pack.version = pkg.version;
   return gulp.src([
@@ -61,11 +124,12 @@ gulp.task('build-slash-command', () => {
       'config.json'
     ])
     .pipe(file('package.json', JSON.stringify(pack, null, 2)))
-    .pipe(gulp.dest('build/slash-command'));
+    .pipe(zip(`slack-drive-slash-command-${pkg.version}.zip`))
+    .pipe(gulp.dest('dist'));
 });
 
 // Build redirect
-gulp.task('build-redirect', () => {
+gulp.task('dist-redirect', () => {
   let pack = require('./src/redirect/package.json');
   pack.version = pkg.version;
   return gulp.src([
@@ -75,51 +139,14 @@ gulp.task('build-redirect', () => {
       'client_secret.json'
     ])
     .pipe(file('package.json', JSON.stringify(pack, null, 2)))
-    .pipe(gulp.dest('build/redirect'));
-});
-
-// Build artifacts
-gulp.task('build', gulp.series([
-  'verify-config',
-  'verify-client-secret',
-  'build-event-publisher',
-  'build-event-consumer',
-  'build-slash-command',
-  'build-redirect'
-]));
-
-// Build distribution for event publisher
-gulp.task('dist-event-publisher', () => {
-  return gulp.src('build/event-publisher/*')
-    .pipe(zip(`slack-drive-event-publisher-${pkg.version}.zip`))
-    .pipe(gulp.dest('dist'));
-
-});
-
-// Build distribution for event consumer
-gulp.task('dist-event-consumer', () => {
-  return gulp.src('build/event-consumer/*')
-    .pipe(zip(`slack-drive-event-consumer-${pkg.version}.zip`))
-    .pipe(gulp.dest('dist'));
-});
-
-// Build distribution for slash command
-gulp.task('dist-slash-command', () => {
-  return gulp.src('build/slash-command/*')
-    .pipe(zip(`slack-drive-slash-command-${pkg.version}.zip`))
-    .pipe(gulp.dest('dist'));
-});
-
-// Build distribution for redirect
-gulp.task('dist-redirect', () => {
-  return gulp.src('build/redirect/*')
     .pipe(zip(`slack-drive-redirect-${pkg.version}.zip`))
     .pipe(gulp.dest('dist'));
 });
 
 // Build distributions
 gulp.task('dist', gulp.series([
-  'build',
+  'verify-config',
+  'verify-client-secret',
   'dist-event-publisher',
   'dist-event-consumer',
   'dist-slash-command',
@@ -127,4 +154,4 @@ gulp.task('dist', gulp.series([
 ]));
 
 // Default
-gulp.task('default', gulp.series(['dist']));
+gulp.task('default', gulp.series(['build']));
