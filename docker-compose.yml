@@ -1,0 +1,12 @@
+version: '3'
+services:
+  slackdrive:
+    build: .
+    image: slackdrive
+    command: /bin/bash -c 'gulp emulator && /bin/bash'
+    volumes:
+      - ./.examples:/slack-drive/.examples
+      - ./gulpfile.js:/slack-drive/gulpfile.js
+      - ./config.json:/slack-drive/config.json
+      - ./client_secret.json:/slack-drive/client_secret.json
+      - ./src:/slack-drive/src

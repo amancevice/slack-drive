@@ -110,7 +110,7 @@ function verifyRequest(req) {
 }
 
 /**
- * Create folder in Drive if none exists.
+ * Create folder in Google Drive if none exists.
  *
  * @param {object} req Cloud Function request context.
  */
@@ -157,7 +157,7 @@ function findOrCreateFolder(req) {
 }
 
 /**
- * Create folder in Drive if none exists.
+ * Add permission to access folder in Google Drive.
  *
  * @param {object} req Cloud Function request context.
  */

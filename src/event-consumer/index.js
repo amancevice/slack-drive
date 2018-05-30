@@ -19,8 +19,8 @@ const prefix = 'https://drive.google.com/drive/u/0/folders/';
 // Firebase
 const firebase = require('firebase-admin');
 firebase.initializeApp({credential: firebase.credential.cert(service)});
-const firestore = firebase.firestore();
-const permissions = firestore.collection(config.cloud.permissions_collection);
+let firestore = firebase.firestore();
+let permissions = firestore.collection(config.cloud.permissions_collection);
 
 // Lazy globals
 let team, channel, user, folder, permission, response, record;
@@ -94,7 +94,7 @@ function getTeam(e) {
 
   return slack.team.info({team: e.team_id})
     .then((res) => {
-      console.log(`TEAM #${res.team.domain}`);
+      console.log(`TEAM ${res.team.domain}`);
       team = res.team;
       return e;
     })

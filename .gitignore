@@ -58,8 +58,10 @@ typings/
 .env
 
 # slack-drive
+.examples/
 .terraform/
 build/
 dist/
+src/*/messages.json
 config.json
 client_secret.json
