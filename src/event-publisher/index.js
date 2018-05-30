@@ -66,7 +66,7 @@ function publishEvent(req) {
     const service = require('./client_secret.json');
     const { google } = require('googleapis');
     const scopes = ['https://www.googleapis.com/auth/pubsub'];
-    const topic = `projects/${config.cloud.project_id}/topics/${config.cloud.pubsub_topic}`;
+    const topic = `projects/${config.cloud.project_id}/topics/${config.cloud.events_topic}`;
     const jwt = new google.auth.JWT(service.client_email, './client_secret.json', null, scopes);
     const pubsub = google.pubsub({version: 'v1', auth: jwt});
     const data = Buffer.from(JSON.stringify(req.body)).toString('base64');

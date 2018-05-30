@@ -5,7 +5,8 @@
   },
   "cloud": {
     "project_id": "<project-id>",
-    "pubsub_topic": "<topic-name>"
+    "events_topic": "slack-drive-events",
+    "permissions_collection": "slack-drive-permissions"
   },
   "slack": {
     "web_api_token": "<web-api-token>",
