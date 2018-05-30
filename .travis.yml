@@ -1,5 +1,8 @@
 language: node_js
 node_js:
 - '6'
+before_install:
+- cp config.example.json config.json
+- touch client_secret.json
 script:
 - gulp build
