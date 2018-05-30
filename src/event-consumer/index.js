@@ -16,6 +16,12 @@ const drive = google.drive({version: 'v3', auth: jwt});
 const red = '#f83a22';
 const prefix = 'https://drive.google.com/drive/u/0/folders/';
 
+// Firebase
+const firebase = require('firebase-admin');
+firebase.initializeApp({credential: firebase.credential.cert(service)});
+const firestore = firebase.firestore();
+const permissions = firestore.collection(config.cloud.permissions_collection);
+
 // Lazy globals
 let team, channel, user, folder, permission, response, record;
 
