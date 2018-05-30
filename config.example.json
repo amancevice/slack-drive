@@ -5,13 +5,14 @@
   },
   "cloud": {
     "project_id": "<project-id>",
+    "region": "us-central1",
     "events_topic": "slack-drive-events",
-    "permissions_collection": "slack-drive-permissions"
+    "permissions_collection": "slack-drive-permissions",
+    "redirect_function": "slack-drive-redirect"
   },
   "slack": {
     "web_api_token": "<web-api-token>",
     "verification_token": "<verification-token>",
-    "redirect_url": "<redirect-url>",
     "slash_command": "<slash-command-name>",
     "users": {
       "excluded": [

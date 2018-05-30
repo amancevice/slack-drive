@@ -98,7 +98,7 @@ function getMessage(req) {
     color: config.app.color,
     ts: new Date()/1000,
     team: req.body.team_domain,
-    url: `${config.slack.redirect_url}?channel=${req.body.channel_id}&user=${req.body.user_id}`,
+    url: `https://${config.cloud.region}-${config.cloud.project_id}.cloudfunctions.net/${config.cloud.redirect_function}?channel=${req.body.channel_id}&user=${req.body.user_id}`,
   }));
 }
 
