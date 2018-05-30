@@ -58,8 +58,8 @@ typings/
 .env
 
 # slack-drive
+.terraform/
 build/
 dist/
-/config.json
-/client_secret.json
-/*.tf
+config.json
+client_secret.json
