@@ -1,17 +1,18 @@
 const config = require('./config.json');
 const messages = require('./messages.json');
 
-Object.prototype.interpolate = function(mapping) {
-  // Copy this
-  let that = JSON.parse(JSON.stringify(this));
-
-  // Replace `${key}` with `value`
+/**
+ * Interpolate ${values} in a JSON object and replace with a given mapping.
+ *
+ * @param {object} object The object to interpolate.
+ * @param {object} mapping The object mapping values to replace.
+ */
+function interpolate(object, mapping) {
+  let that = JSON.parse(JSON.stringify(object));
   Object.keys(mapping).map((k) => {
     that = JSON.parse(JSON.stringify(that)
       .replace(new RegExp(`\\$\\{${k}\\}`, 'g'), mapping[k]));
   });
-
-  // Return copy
   return that;
 }
 
@@ -78,8 +79,8 @@ function verifyChannel(req) {
  * @param {object} req Cloud Function request context.
  */
 function verifyText(req) {
-  if (messages[req.body.text || 'help'] === undefined) {
-    return Promise.reject(messages.slash_commands.bad_text.interpolate({
+  if (messages.slash_commands[req.body.text || 'help'] === undefined) {
+    return Promise.reject(interpolate(messages.slash_commands.bad_text, {
       cmd: config.slack.slash_command,
     }));
   }
@@ -92,7 +93,7 @@ function verifyText(req) {
  * @param {object} req Cloud Function request context.
  */
 function getMessage(req) {
-  return Promise.resolve(messages[req.body.text || 'help'].interpolate({
+  return Promise.resolve(interpolate(messages.slash_commands[req.body.text || 'help'], {
     channel: req.body.channel_id[0] === 'C' ? `<#${req.body.channel_id}>` : 'this channel',
     cmd: config.slack.slash_command,
     color: config.slack.color,
