@@ -17,9 +17,10 @@ const prefix = 'https://drive.google.com/drive/u/0/folders/';
 
 // Firebase
 const firebase = require('firebase-admin');
-firebase.initializeApp({credential: firebase.credential.cert(service)});
-const firestore = firebase.firestore();
-const permissions = firestore.collection(config.cloud.permissions_collection);
+firebase.initializeApp({
+  credential: firebase.credential.cert(service),
+  databaseURL: `https://${config.cloud.project_id}.firebaseio.com`
+});
 
 // Lazy globals
 let channel, user, folder, permission;
@@ -182,6 +183,21 @@ function addPermission(req) {
 }
 
 /**
+ * Record permission info in Realtime database
+ *
+ * @param {object} req Cloud Function request context.
+ */
+function recordPermission(req) {
+  return firebase.database()
+    .ref(`slack-drive/permissions/${channel.id}/${user.id}`)
+    .set(permission)
+    .then(() => {
+      console.log(`RECORDED ${JSON.stringify(permission)}`);
+      return req;
+    });
+}
+
+/**
  * Do Redirect.
  *
  * @param {object} req Cloud Function request context.
@@ -219,6 +235,7 @@ exports.redirect = (req, res) => {
     .then(verifyRequest)
     .then(findOrCreateFolder)
     .then(addPermission)
+    .then(recordPermission)
     .then((req) => sendRedirect(req, res))
     .catch((err) => sendError(err, res));
 }
