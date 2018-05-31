@@ -206,3 +206,13 @@ gulp.task('emulator', gulp.series([
 
 // Default
 gulp.task('default', gulp.series(['build']));
+
+// Travis deploy check
+gulp.task('travis', () => {
+  return new Promise((resolve, reject) => {
+    if (process.env.TRAVIS_TAG !== pkg.version) {
+      reject(new Error('$TRAVIS_TAG and package.json do not match'));
+    }
+    resolve();
+  });
+});

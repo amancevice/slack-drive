@@ -3,6 +3,8 @@ node_js:
 - '6'
 script:
 - gulp build
+before_deploy:
+- gulp travis
 deploy:
 - provider: releases
   api_key:

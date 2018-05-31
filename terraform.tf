@@ -1,7 +1,7 @@
 module "slack_drive_cloud" {
   source            = "amancevice/slack-drive/google"
   version           = "0.2.0"
-  app_version       = "0.1.1" // this should match `package.json`
+  app_version       = "0.1.2" // this should match `package.json`
   bucket_name       = "${var.bucket_name}"
   cloud_credentials = "${file("client_secret.json")}"
   cloud_project     = "${var.cloud_project}"
