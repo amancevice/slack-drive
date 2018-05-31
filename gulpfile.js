@@ -18,7 +18,7 @@ gulp.task('build-event-publisher', () => {
 gulp.task('build-event-consumer', () => {
   let pack = require('./src/event-consumer/package.json');
   pack.version = pkg.version;
-  return gulp.src(['src/event-consumer/index.js', 'src/messages.json'])
+  return gulp.src('src/event-consumer/index.js')
     .pipe(file('package.json', JSON.stringify(pack, null, 2)))
     .pipe(gulp.dest('build/src/event-consumer'));
 });
@@ -27,7 +27,7 @@ gulp.task('build-event-consumer', () => {
 gulp.task('build-slash-command', () => {
   let pack = require('./src/slash-command/package.json');
   pack.version = pkg.version;
-  return gulp.src(['src/slash-command/index.js', 'src/messages.json'])
+  return gulp.src('src/slash-command/index.js')
     .pipe(file('package.json', JSON.stringify(pack, null, 2)))
     .pipe(gulp.dest('build/src/slash-command'));
 });
@@ -36,16 +36,27 @@ gulp.task('build-slash-command', () => {
 gulp.task('build-redirect', () => {
   let pack = require('./src/redirect/package.json');
   pack.version = pkg.version;
-  return gulp.src(['src/redirect/index.js', 'src/messages.json'])
+  return gulp.src('src/redirect/index.js')
     .pipe(file('package.json', JSON.stringify(pack, null, 2)))
     .pipe(gulp.dest('build/src/redirect'));
 });
 
-// Build config example
-gulp.task('build-config', () => {
-  return gulp.src(['gulpfile.js', 'terraform.tf'])
-    .pipe(file('config.json', JSON.stringify(require('./config.example.json'), null, 2)))
-    .pipe(file('README', 'Deploying Slack Drive\n1. Update `config.json` with the correct API keys and options\n2. Download `client_secret.json` from the Google Cloud console and put in this directory.\n3. Optionally update `terraform.tf` with the correct values.\n4.Run `gulp dist` to build distribution packages.\n5. Run `terraform apply` to create the Slack Drive infrastructure.'))
+// Build messages.json
+gulp.task('build-messages', () => {
+  return gulp.src('src/messages.json')
+    .pipe(gulp.dest('build/src'));
+});
+
+// Build root files
+gulp.task('build-root', () => {
+  return gulp.src([
+      'config.example.json',
+      'gulpfile.js',
+      'package.json',
+      'package-lock.json',
+      'terraform.tf'
+    ])
+    .pipe(file('README', 'Deploying Slack Drive\n1. Update `config.json` with the correct API keys and options\n2. Download `client_secret.json` from the Google Cloud console and put in this directory.\n3. Optionally update `terraform.tf` with the correct values.\n4. Run `npm install` and `gulp dist` to build distribution packages.\n5. Run `terraform apply` to create the Slack Drive infrastructure.\n'))
     .pipe(gulp.dest('build'));
 });
 
@@ -62,7 +73,8 @@ gulp.task('build', gulp.series([
   'build-event-consumer',
   'build-slash-command',
   'build-redirect',
-  'build-config',
+  'build-messages',
+  'build-root',
   'build-dist'
 ]));
 

@@ -6,6 +6,7 @@ module "slack_drive_cloud" {
   cloud_credentials = "${file("client_secret.json")}"
   cloud_project     = "${var.cloud_project}"
   cloud_region      = "${var.cloud_region}"
+  service_account   = "${var.service_account}"
 }
 
 variable "bucket_name" {
@@ -21,6 +22,10 @@ variable "cloud_project" {
 variable "cloud_region" {
   description = "The region to operate under, if not specified by a given resource."
   default     = "us-central1"
+}
+
+variable "service_account" {
+  description = "An email address that represents a service account. For example, my-other-app@appspot.gserviceaccount.com."
 }
 
 output "event_pubsub_topic" {
