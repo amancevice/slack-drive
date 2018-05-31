@@ -24,7 +24,7 @@ firebase.initializeApp({
 });
 
 // Lazy globals
-let team, channel, user, folder, permission, response, record, ref;
+let team, channel, user, folder, permission, response, record;
 
 /**
  * Interpolate ${values} in a JSON object and replace with a given mapping.
@@ -284,14 +284,12 @@ function recordPermission(e) {
  * @param {object} e.event Slack event object.
  */
 function findPermission(e) {
-  return Promise.resolve(e)
-    .then((e) => {
-      firebase.database()
-        .ref(`slack-drive/permissions/${channel.id}/${user.id}`)
-        .on('value', (snapshot) => {
-          ref = snapshot.val();
-          console.log(`FOUND ${JSON.stringify(ref)}`);
-        });
+  return firebase.database()
+    .ref(`slack-drive/permissions/${channel.id}/${user.id}`)
+    .once('value')
+    .then((snapshot) => {
+      permission = snapshot.val();
+      console.log(`FOUND ${JSON.stringify(permission)}`);
       return e;
     });
 }
@@ -461,7 +459,7 @@ function postRecord(e) {
   // Post record message
   console.log(`POSTING RECORD ${JSON.stringify(record)}`);
   return slack.chat.postMessage(record)
-    .then((res) => { return e; })
+    .then((res) => { return; })
     .catch((err) => { console.error(JSON.stringify(err)); throw err; });
 }
 
@@ -471,7 +469,7 @@ function postRecord(e) {
  * @param {object} err Error.
  * @param {object} e Slack event object.
  */
-function postError(err, e) {
+function postError(err, e, callback) {
   // Build message
   const error = interpolate(messages.log.error, {
     error_message: err.message,
@@ -486,7 +484,7 @@ function postError(err, e) {
   console.error(`POSTING ERROR ${JSON.stringify(error)}`);
   slack.chat.postMessage(error);
 
-  throw err;
+  callback();
 }
 
 /**
@@ -515,6 +513,7 @@ function processEvent(e) {
   else if (e.event.type === 'member_left_channel' && userPermitted(e)) {
     return Promise.resolve(e)
       .then(getUser)
+      .then(findOrCreateFolder)
       .then(findPermission)
       .then(revokePermission)
       .then(removePermission)
@@ -545,7 +544,6 @@ exports.consumeEvent = (event, callback) => {
     .then(getChannel)
     .then(processEvent)
     .then(postRecord)
-    .catch((err) => postError(err, event.data));
-
-  callback();
+    .then(callback)
+    .catch((err) => postError(err, event.data, callback));
 };
