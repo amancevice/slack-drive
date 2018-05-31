@@ -1,6 +1,6 @@
-# Slack Drive
-
-<img src="https://github.com/amancevice/slack-drive/raw/master/docs/images/slack-drive-1200x1200.png" width=200 height=200></img>
+<object data="https://github.com/amancevice/slack-drive/raw/master/docs/images/logo.svg" type="image/svg+xml">
+<img src="https://github.com/amancevice/slack-drive/raw/master/docs/images/logo.png" width=500></img>
+</object>
 
 Create & share Google Docs using Slack channels and Google Drive.
 
