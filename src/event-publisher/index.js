@@ -83,6 +83,7 @@ function publishEvent(req) {
       })
       .then((pub) => {
         console.log(`PUBSUB ${JSON.stringify(pub.data)}`);
+        return req;
       });
   }
 }
@@ -98,9 +99,7 @@ exports.publishEvent = (req, res) => {
   Promise.resolve(req)
     .then(logEvent)
     .then(verifyToken)
+    .then(publishEvent)
     .then((req) => sendResponse(req, res))
     .catch((err) => sendError(err, res));
-
-  // Publish event to PubSub for processing
-  publishEvent(req);
 }
