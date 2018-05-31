@@ -18,15 +18,22 @@ const prefix = 'https://drive.google.com/drive/u/0/folders/';
 
 // Firebase
 const firebase = require('firebase-admin');
-firebase.initializeApp({credential: firebase.credential.cert(service)});
-let firestore = firebase.firestore();
-let permissions = firestore.collection(config.cloud.permissions_collection);
+firebase.initializeApp({
+  credential: firebase.credential.cert(service),
+  databaseURL: `https://${config.cloud.project_id}.firebaseio.com`
+});
 
 // Lazy globals
-let team, channel, user, folder, permission, response, record;
+let team, channel, user, folder, permission, response, record, ref;
 
-Object.prototype.interpolate = function(mapping) {
-  let that = JSON.parse(JSON.stringify(this));
+/**
+ * Interpolate ${values} in a JSON object and replace with a given mapping.
+ *
+ * @param {object} object The object to interpolate.
+ * @param {object} mapping The object mapping values to replace.
+ */
+function interpolate(object, mapping) {
+  let that = JSON.parse(JSON.stringify(object));
   Object.keys(mapping).map((k) => {
     that = JSON.parse(JSON.stringify(that)
       .replace(new RegExp(`\\$\\{${k}\\}`, 'g'), mapping[k]));
@@ -34,8 +41,13 @@ Object.prototype.interpolate = function(mapping) {
   return that;
 }
 
-String.prototype.titlize = function() {
-  return this.replace(/_/g, ' ').split(/ /).map((x) => {
+/**
+ * Transform a `snake_case` string to `Title Case`
+ *
+ * @param {string} str The string to titleize
+ */
+function titlize(str) {
+  return str.replace(/_/g, ' ').split(/ /).map((x) => {
     return `${x.slice(0, 1).toUpperCase()}${x.slice(1)}`;
   }).join(' ');
 }
@@ -222,7 +234,7 @@ function findOrCreateFolder(e) {
 }
 
 /**
- * Create folder in Drive if none exists.
+ * Add permission to access folder in Google Drive.
  *
  * @param {object} e Slack event object message.
  * @param {object} e.event Slack event object.
@@ -247,6 +259,74 @@ function addPermission(e) {
   }
 
   return Promise.resolve(e);
+}
+
+/**
+ * Record permission info in Realtime database
+ *
+ * @param {object} e Slack event object message.
+ * @param {object} e.event Slack event object.
+ */
+function recordPermission(e) {
+  return firebase.database()
+    .ref(`slack-drive/permissions/${channel.id}/${user.id}`)
+    .set(permission)
+    .then(() => {
+      console.log(`RECORDED ${JSON.stringify(permission)}`);
+      return e;
+    });
+}
+
+/**
+ * Add permission to access folder in Google Drive.
+ *
+ * @param {object} e Slack event object message.
+ * @param {object} e.event Slack event object.
+ */
+function findPermission(e) {
+  return Promise.resolve(e)
+    .then((e) => {
+      firebase.database()
+        .ref(`slack-drive/permissions/${channel.id}/${user.id}`)
+        .on('value', (snapshot) => {
+          ref = snapshot.val();
+          console.log(`FOUND ${JSON.stringify(ref)}`);
+        });
+      return e;
+    });
+}
+
+/**
+ * Revoke permission to access folder in Google Drive.
+ *
+ * @param {object} e Slack event object message.
+ * @param {object} e.event Slack event object.
+ */
+function revokePermission(e) {
+  return drive.permissions.delete({
+      fileId: folder.id,
+      permissionId: permission.id
+    })
+    .then((res) => {
+      console.log(`REVOKED ${permission.id}`);
+      return e;
+    });
+}
+
+/**
+ * Remove permission from Realtime database.
+ *
+ * @param {object} e Slack event object message.
+ * @param {object} e.event Slack event object.
+ */
+function removePermission(e) {
+  return firebase.database()
+    .ref(`slack-drive/permissions/${channel.id}/${user.id}`)
+    .remove()
+    .then(() => {
+      console.log(`REMOVED ${permission.id}`);
+      return e;
+    });
 }
 
 /**
@@ -318,7 +398,7 @@ function renameOrCreateFolder(e) {
 function postResponse(e) {
 
   // Build message
-  response = messages.events[e.event.type].interpolate({
+  response = interpolate(messages.events[e.event.type], {
     channel: e.event.channel_type === 'C' ? `<#${channel.id}>` : `#${channel.name}`,
     cmd: config.slack.slash_command,
     color: config.slack.color,
@@ -368,11 +448,11 @@ function postResponse(e) {
 function postRecord(e) {
 
   // Build message
-  record = messages.log.success.interpolate({
+  record = interpolate(messages.log.success, {
     channel: e.event.channel_type === 'C' ? `<#${channel.id}>` : `#${channel.name}`,
     cmd: config.slack.slash_command,
     event: JSON.stringify(e.event).replace(/"/g, '\\"'),
-    title: e.event.type.titlize(),
+    title: titlize(e.event.type),
     ts: e.event.event_ts,
     user: e.event.user === undefined ? 'N/A' : `<@${e.event.user}>`
   });
@@ -393,7 +473,7 @@ function postRecord(e) {
  */
 function postError(err, e) {
   // Build message
-  const error = messages.log.error.interpolate({
+  const error = interpolate(messages.log.error, {
     error_message: err.message,
     error_name: err.name,
     event: JSON.stringify(e).replace(/"/g, '\\"'),
@@ -416,24 +496,35 @@ function postError(err, e) {
  * @param {object} e.event Slack event object.
  */
 function processEvent(e) {
-  // User event & user is permitted to invoke event
-  if (userEvent(e) && userPermitted(e)) {
+  // Channel renamed
+  if (e.event.type === 'channel_rename') {
+    return Promise.resolve(e).then(renameOrCreateFolder);
+  }
+
+  // Member joined channel
+  else if (e.event.type === 'member_joined_channel' && userPermitted(e)) {
     return Promise.resolve(e)
       .then(getUser)
       .then(findOrCreateFolder)
       .then(addPermission)
-      .then(postResponse);
+      .then(recordPermission)
+      .then(postResponse)
+  }
+
+  // Member left channel
+  else if (e.event.type === 'member_left_channel' && userPermitted(e)) {
+    return Promise.resolve(e)
+      .then(getUser)
+      .then(findPermission)
+      .then(revokePermission)
+      .then(removePermission)
+      .then(postResponse)
   }
 
   // User event, but user is not permitted to evoke event
   else if (userEvent(e)) {
     e.event.type = `${e.event.type} (Testing Only)`;
     return Promise.resolve(e).then(getUser);
-  }
-
-  // Channel event TODO
-  else if (e.event.type === 'channel_rename') {
-    return Promise.resolve(e).then(renameOrCreateFolder);
   }
 
   // Error
