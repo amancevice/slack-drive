@@ -1,12 +1,10 @@
-<object data="https://github.com/amancevice/slack-drive/raw/master/docs/images/logo.svg" type="image/svg+xml">
-<img src="https://github.com/amancevice/slack-drive/raw/master/docs/images/logo.png" width=500></img>
-</object>
+<img src="https://github.com/amancevice/slack-drive/raw/master/docs/images/logo.png" width=512>
 
-Create & share Google Docs using Slack channels and Google Drive.
+Share Google Docs by email using Slack channels and Google Drive.
 
 ## Overview
 
-This application aims to provide Slack teams with a private folder in Google Drive for each channel in the workspace. Members of each channel are given access to the channel's folder using the email address associated with his/her Slack account. This function aims to reduce the use of to Google Docs' "share by link" feature because it is inherently insecure.
+This application aims to provide Slack teams with a private folder in Google Drive for each channel in the workspace. Members of each channel are given access to the channel's folder using the email address associated with his/her Slack account. This function aims to reduce the use of to Google Docs' "_share by link_" feature because it is inherently insecure.
 
 Team members are added as collaborators simply by joining the channel or by initiating a custom slash command within said channel. Leaving a channel will remove the user from the set of collaborators for that channel's files in Google Drive.
 
@@ -20,71 +18,119 @@ Google Cloud is a natural back-end for this application and this document is wri
 
 ### Events
 
-Slack Drive listens for four event types issued from Slack’s Event API:
+![event](./docs/images/event.png)
+
+The above diagram illustrates the flow of data when a Slack event occurs.
+
+#### 1. Event Emitted
+
+Slack's [Events API](https://api.slack.com/events-api) issues events on a subscription basis; you must configure your Slack app to subscribe to four event types:
 * `channel_rename` and `group_rename` are sent when a user renames a channel (including private channels)
 * `member_joined_channel` when a member joins a channel
 * `member_left_channel` when a member leaves a channel
 
-Slack events are handled using an HTTP endpoint and a subscription-based events processor. Slack imposes a three-second time limit for responses to requests made by Slack. Because of limitations inherent to the “serverless” pattern (where “cold start” time of applications is a factor) events received are handed off to a queue that can be consumed by an external process. In other words, the concerns of responding to Slack events and processing said event are separated into two distinct Cloud Functions.
+Slack will send the event payloads to an HTTP endpoint.
 
-The code providing the HTTP endpoint simply publishes the event to a Pub/Sub topic (similar to SNS in Amazon lingo) after verifying that the request was received with the correct validation token. Messages to Pub/Sub are Base64-encoded JSON strings of the Slack event as they are transmitted by the Events API.
+#### 2. Event Received
 
-Publishing to a Pub/Sub topic triggers a subscribed Cloud Function to process the event without regard for HTTP latencies or cold start time. Members joining a channel are processed by searching-for or creating a folder in Google Drive with the equivalent channel name, and adding the user to the list of collaborators for that folder. Channel or group renames trigger an update to rename the corresponding folder in Google Drive. Members leaving the channel are removed from the list of collaborators for the folder and , hence, lose access to its contents (Note: this feature has not yet been implemented as the permissions on a Google Drive folder cannot be retrieved by email).
+Slack events are handled using an HTTP endpoint backed by a [Google Cloud Function](https://cloud.google.com/functions/) (similar to an AWS Lambda). Slack imposes a three-second time limit for responses to requests made by Slack, so it is vital that this function be slim and speedy.
+
+The HTTP endpoint function simply verifies that the request was received with the correct validation token, then publishes the event.
+
+#### 3. Event Published
+
+Google's [Pub/Sub](https://cloud.google.com/pubsub/) service acts as middleware for processing the events. Messages to Pub/Sub are Base64-encoded JSON strings of the Slack event as they are transmitted by Slack's Events API.
+
+#### 4. Response Sent
+
+Once the event has been successfully published to Pub/Sub, the function responds to the initial request with a 200 OK response.
+
+#### 5. Event Consumed
+
+Publishing to a Pub/Sub topic triggers a subscribed Cloud Function to process the event without regard for HTTP latencies or cold start time.
+
+Using Slack's [Web API](https://api.slack.com/web) the Channel and User info is gathered to be translated into a request to Google Drive.
+
+#### 6. Google Drive Modified
+
+Channel or group renames trigger an update to rename the corresponding folder in Google Drive.
+
+Members joining a channel are processed by searching-for or creating a folder in Google Drive with the equivalent channel name, and adding the user to the list of collaborators for that folder.
+
+Members leaving the channel are removed from the list of collaborators for the folder and , hence, lose access to its contents.
+
+#### 7. Permissions Recorded
+
+The Google Drive REST API does not expose functionality to search for permissions on a file in Google Drive by email. As such it is necessary to keep records of granted permissions so that they can be revoked later.
+
+Because of the highly simplistic nature of the data, Firebase's [Realtime Database](https://firebase.google.com/products/realtime-database/) is a reasonable solution to managing this problem.
+
+#### 8. Slack Message Posted
+
+When a member joins a channel, an ephemeral message is posted back to the user with a link to the channel folder in Google Drive as well as general info about the Slack Drive app.
+
+A member leaving a channel receives a DM from the Slack bot indicating that their access to Google Drive has been removed for that channel.
+
+Additionally, a logging message is posted to a (preferably private) channel for the Slack admins to monitor. This is also where any errors would be posted if something goes wrong in the workflow.
 
 ### Slash Commands
 
-In addition to listening for events, a user may trigger the workflow to access a channel’s folder in Google Drive using Slack’s slash commands feature. Slack also imposes a three-second time limit on responses to user-initiated slash commands, so like the event listener Cloud Function, the slash command code is minimal and handles no responsibilities other than responding to the user. The name of your slash command is configurable, but the default is `/drive`.
+![slash-command](./docs/images/slash-command.png)
+
+The above diagram illustrates the flow of data when a user issues a slash command in Slack.
+
+#### 1. Slash Command Issued
+
+In addition to listening for events, a user may trigger the workflow to access a channel’s folder in Google Drive using Slack’s slash commands feature.
+
+#### 2. Slash Command Received
+
+Outgoing slash commands are handled similarly to events using an HTTP endpoint backed by a Cloud Function.
+
+#### 3. Response Sent
+
+Slack also imposes a three-second time limit on responses to user-initiated slash commands, so like the event listener Cloud Function, the slash command code is minimal and handles no responsibilities other than responding to the user. The name of your slash command is configurable, but the default is `/drive`.
 
 Typing `/drive` or `/drive help` from a given channel will send an ephemeral message to the user with instructions on how to use the tool.
 
-Typing `/drive link` will send an ephemeral message to the user with a link to the channel’s folder in Google Drive. Because of the aforementioned three-second rule the link to Google Drive is routed through a different Cloud Function that grants access to the requesting user in real-time, but without a strict time limit. Like the event consumer Cloud Function, the process of redirecting the user is done by searching-for or creating the channel’s folder in Google Drive, adding the Slack user as a collaborator by email, and finally redirecting the request to the given Google Drive URL. The redirection HTTP endpoint accepts the query parameters `channel` and `user`. The given user must be a member of the given channel at the time of the request for the redirection to succeed.
+Typing `/drive link` will send an ephemeral message to the user with a link to the channel’s folder in Google Drive.
 
-<img src="https://github.com/amancevice/slack-drive/raw/master/docs/images/arch.png"></img>
+#### 4. Link Requested
 
-## Google Cloud
-Terraform modules are provided to help deploy the supporting infrastructure for this application, but some manual setup is required.
+Because of the aforementioned three-second rule the link to Google Drive is routed through a different Cloud Function that grants access to the requesting user in real-time, but without a strict time limit.
+
+#### 5. Link Redirected
+
+Like the event consumer Cloud Function, the process of redirecting the user is done by searching-for or creating the channel’s folder in Google Drive, adding the Slack user as a collaborator by email, and finally redirecting the request to the given Google Drive URL. The redirection HTTP endpoint accepts the query parameters `channel` and `user`. The given user must be a member of the given channel at the time of the request for the redirection to succeed.
+
+#### 6. Google Drive Modified
+
+As above, members in a channel are processed by searching-for or creating a folder in Google Drive with the equivalent channel name, and adding the user to the list of collaborators for that folder.
+
+With all the Google Drive requests handled, the user is then redirected to the private URL for the channel folder.
+
+#### 7. Permissions Recorded
+
+Again, as above the Google Drive REST API does not expose functionality to search for permissions on a file in Google Drive by email. As such it is necessary to keep records of granted permissions so that they can be revoked later.
+
+## Deployment
+
+A [terraform module](https://registry.terraform.io/modules/amancevice/slack-drive/google/0.2.0) is provided to help deploy the supporting infrastructure for this application, but some manual setup is required.
+
+_This section is under development..._
 
 ### Setup
 
 In order to access Google Cloud services you will need to creat a **project** and a **service account** that has edit access for the project.
 
-### Deployment
+### Configuration
 
-After setting up your Google Cloud project, service account and generating a credentials file, terraform can be used to deploy & manage your infrastructure. This recipe requires and/or deploys:
+Head to the [releases](https://github.com/amancevice/slack-drive/releases) page of this repo and download the latest package, titled `slack-drive-x.y.z.zip`.
 
-* One Cloud Storage bucket (for hosting the Cloud Function package archives)
-* Four Cloud Function configurations; three triggered by HTTPS, one by Pub/Sub.
-* One Pub/Sub topic for processing Slack events.
+Unzip the archive and view the `README` file in it. It should instruct you to:
 
-Create a file called `deploy.tf` (the name is not important, but be careful not to commit secrets to public repositories). At minimum, its contents should look like the text below with the proper values for each item.
-
-```
-module "slack_drive_cloud" {
-  source            = "amancevice/slack-drive/google"
-  version           = "0.1.0"
-  bucket_name       = "my-project-slack-drive"
-  cloud_credentials = "${file("client_secret.json")}"
-  cloud_project_id  = "my-project-123456"
-  cloud_region      = "us-central1"
-}
-
-output "event_pubsub_topic" {
-  value = "${module.slack_drive_cloud.event_pubsub_topic}"
-}
-
-output "event_subscriptions_url" {
-  value = "${module.slack_drive_cloud.event_subscriptions_url}"
-}
-
-output "redirect_url" {
-  value = "${module.slack_drive_cloud.redirect_url}"
-}
-
-output "slash_command_url" {
-  value = "${module.slack_drive_cloud.slash_command_url}"
-}
-```
-
-Run `terraform apply` to review & apply the resources for the application. Import any existing infrastructure (like the bucket) using `terraform import`.
-
-Review the [variables](./terraform/cloud/variables.tf) file for additional configuration options, if needed.
+1. Rename `config.example.json` to `config.json` and fill-in the correct API keys and options.
+2. Download `client_secret.json` from the Google Cloud console and put in this directory.
+3. Optionally update `terraform.tf` with the correct values.
+4. Run `npm install` and `gulp dist` to build distribution packages.
+5. Run `terraform plan` to view the impending infrastructure changes and `terraform apply` to create the Slack Drive infrastructure.
