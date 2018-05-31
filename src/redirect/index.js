@@ -1,5 +1,6 @@
 // App
 const config = require('./config.json');
+const messages = require('./messages.json');
 
 // Slack
 const { WebClient } = require('@slack/client');
@@ -25,10 +26,19 @@ firebase.initializeApp({
 // Lazy globals
 let channel, user, folder, permission;
 
-String.prototype.titlize = function() {
-  return this.replace(/_/g, ' ').split(/ /).map((x) => {
-    return `${x.slice(0, 1).toUpperCase()}${x.slice(1)}`;
-  }).join(' ');
+/**
+ * Interpolate ${values} in a JSON object and replace with a given mapping.
+ *
+ * @param {object} object The object to interpolate.
+ * @param {object} mapping The object mapping values to replace.
+ */
+function interpolate(object, mapping) {
+  let that = JSON.parse(JSON.stringify(object));
+  Object.keys(mapping).map((k) => {
+    that = JSON.parse(JSON.stringify(that)
+      .replace(new RegExp(`\\$\\{${k}\\}`, 'g'), mapping[k]));
+  });
+  return that;
 }
 
 /**
@@ -198,6 +208,31 @@ function recordPermission(req) {
 }
 
 /**
+ * Post success message to Slack
+ *
+ * @param {object} req Cloud Function request context.
+ */
+function postRecord(req) {
+
+  // Build message
+  record = interpolate(messages.log.success, {
+    channel: req.query.channel[0] === 'C' ? `<#${channel.id}>` : `#${channel.name}`,
+    cmd: config.slack.slash_command,
+    event: JSON.stringify(req.query).replace(/"/g, '\\"'),
+    title: 'Slash Command Redirect',
+    ts: new Date()/1000,
+    user: `<@${req.query.user}>`
+  });
+  record.channel = config.slack.channel;
+
+  // Post record message
+  console.log(`POSTING RECORD ${JSON.stringify(record)}`);
+  return slack.chat.postMessage(record)
+    .then((res) => { return req; })
+    .catch((err) => { console.error(JSON.stringify(err)); throw err; });
+}
+
+/**
  * Do Redirect.
  *
  * @param {object} req Cloud Function request context.
@@ -236,6 +271,7 @@ exports.redirect = (req, res) => {
     .then(findOrCreateFolder)
     .then(addPermission)
     .then(recordPermission)
+    .then(postRecord)
     .then((req) => sendRedirect(req, res))
     .catch((err) => sendError(err, res));
 }
