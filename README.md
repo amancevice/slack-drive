@@ -4,6 +4,8 @@ Share Google Docs by email using Slack channels and Google Drive.
 
 ## Overview
 
+![welcome](./docs/images/welcome.png)
+
 This application aims to provide Slack teams with a private folder in Google Drive for each channel in the workspace. Members of each channel are given access to the channel's folder using the email address associated with his/her Slack account. This function aims to reduce the use of to Google Docs' "_share by link_" feature because it is inherently insecure.
 
 Team members are added as collaborators simply by joining the channel or by initiating a custom slash command within said channel. Leaving a channel will remove the user from the set of collaborators for that channel's files in Google Drive.
@@ -73,6 +75,22 @@ A member leaving a channel receives a DM from the Slack bot indicating that thei
 
 Additionally, a logging message is posted to a (preferably private) channel for the Slack admins to monitor. This is also where any errors would be posted if something goes wrong in the workflow.
 
+##### Member Joined Channel
+
+![welcome](./docs/images/welcome.png)
+
+##### Member Left Channel
+
+![goodbye](./docs/images/goodbye.png)
+
+##### Success
+
+![success](./docs/images/success.png)
+
+##### Error
+
+![error](./docs/images/error.png)
+
 ### Slash Commands
 
 ![slash-command](./docs/images/slash-command.png)
@@ -94,6 +112,10 @@ Slack also imposes a three-second time limit on responses to user-initiated slas
 Typing `/drive` or `/drive help` from a given channel will send an ephemeral message to the user with instructions on how to use the tool.
 
 Typing `/drive link` will send an ephemeral message to the user with a link to the channel’s folder in Google Drive.
+
+#### Link
+
+![link](./docs/images/link.png)
 
 #### 4. Link Requested
 
