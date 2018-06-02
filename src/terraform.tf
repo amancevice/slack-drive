@@ -7,7 +7,7 @@ provider "google" {
 
 module "slack_drive_cloud" {
   source             = "amancevice/slack-drive/google"
-  version            = "0.4.2"
+  version            = "0.4.3"
   bucket_name        = "${var.bucket_name}"
   channel            = "${var.channel}"
   project            = "${var.project}"
