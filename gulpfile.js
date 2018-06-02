@@ -66,14 +66,20 @@ gulp.task('emulator', gulp.series([
 
 // Build artifacts
 gulp.task('build', () => {
-  return gulp.src(['src/config.tpl', 'src/terraform.tf', 'src/README'])
+  return gulp.src([
+      'src/.gitignore',
+      'src/README',
+      'src/config.tpl',
+      'src/terraform.tf'
+    ])
     .pipe(file('VERSION', pkg.version))
+    .pipe(file('terraform.tfvars', ''))
     .pipe(gulp.dest('build/slack-drive'));
 });
 
 // Dist artifact
 gulp.task('dist', () => {
-  return gulp.src('build/**')
+  return gulp.src(['build/**'], {dot: true})
     .pipe(zip(`slack-drive-${pkg.version}.zip`))
     .pipe(gulp.dest('dist'));
 });
