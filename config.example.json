@@ -1,16 +1,16 @@
 {
   "cloud": {
-    "project_id": "<project-id>",
-    "region": "us-central1",
-    "events_topic": "slack-drive-events",
-    "redirect_function": "slack-drive-redirect"
+    "project_id": "${project}",
+    "region": "${region}",
+    "events_topic": "${events_pubsub_topic}",
+    "redirect_function": "${redirect_function_name}"
   },
   "slack": {
-    "web_api_token": "<web-api-token>",
-    "verification_token": "<verification-token>",
-    "channel": "<loggin-channel-id>",
-    "color": "<#color-code>",
-    "slash_command": "<slash-command-name>",
+    "web_api_token": "${web_api_token}",
+    "verification_token": "${verification_token}",
+    "channel": "${channel}",
+    "color": "${color}",
+    "slash_command": "${slash_command}",
     "users": {
       "excluded": [
         "USLACKBOT"
