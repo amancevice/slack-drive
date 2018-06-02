@@ -7,7 +7,7 @@ provider "google" {
 
 module "slack_drive_cloud" {
   source             = "amancevice/slack-drive/google"
-  version            = "0.3.0"
+  version            = "0.4.2"
   bucket_name        = "${var.bucket_name}"
   channel            = "${var.channel}"
   project            = "${var.project}"
@@ -45,7 +45,6 @@ variable "web_api_token" {
   description = "Slack Web API token."
   //default     = "<token>"
 }
-
 
 output "event_pubsub_topic" {
   value = "${module.slack_drive_cloud.event_pubsub_topic}"

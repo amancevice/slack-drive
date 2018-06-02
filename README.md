@@ -42,7 +42,7 @@ In order to access Google Cloud services you will need to create a **project** a
 
 ## Deployment
 
-The simplest way to deploy this app is to use [Terraform](https://www.terraform.io). A [terraform module](https://registry.terraform.io/modules/amancevice/slack-drive/google) is provided to help deploy the supporting infrastructure for this application, but some manual setup is required...
+The simplest way to deploy this app is to use [Terraform](https://www.terraform.io). A [terraform module](https://registry.terraform.io/modules/amancevice/slack-drive/google) is provided to help deploy the supporting infrastructure for this application.
 
 ### Configuration
 
@@ -50,8 +50,9 @@ Head to the [releases](https://github.com/amancevice/slack-drive/releases) page 
 
 Unzip the archive and view the `README` file in it. It should instruct you to:
 
-1. Rename `config.example.json` to `config.json` and fill-in the correct API keys and options.
-2. Download `client_secret.json` from the Google Cloud console and put in this directory.
-3. Optionally update `terraform.tf` with the correct values.
-4. Run `npm install` and `gulp dist` to build distribution packages.
-5. Run `terraform plan` to view the impending infrastructure changes and `terraform apply` to create the Slack Drive infrastructure.
+1. Download `client_secret.json` from the Google Cloud console into the package directory.
+2. Run `terraform init` to download the deployment modules.
+3. (Optional) Update variables in `terraform.tf` with the correct values
+4. (Optional) Or, simply enter them on the command line in step 5.
+5. Run `terraform apply` to view, approve, and deploy the Slack Drive infrastructure.
+6. Take note of the output URLs to finish setting up your Slack App.
