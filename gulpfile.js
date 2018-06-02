@@ -66,7 +66,7 @@ gulp.task('emulator', gulp.series([
 
 // Build artifacts
 gulp.task('build', () => {
-  return gulp.src(['src/terraform.tf', 'src/README'])
+  return gulp.src(['src/config.tpl', 'src/terraform.tf', 'src/README'])
     .pipe(file('VERSION', pkg.version))
     .pipe(gulp.dest('build/slack-drive'));
 });

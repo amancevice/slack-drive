@@ -6,27 +6,10 @@ provider "template" {
   version = "~> 1.0"
 }
 
-// Config template
-data "template_file" "config" {
-  template = "${file("${path.module}/config.example.json")}"
-
-  vars {
-    channel                = "${var.channel}"
-    color                  = "${var.color}"
-    events_pubsub_topic    = "${var.events_pubsub_topic}"
-    project                = "${var.project}"
-    redirect_function_name = "${var.redirect_function_name}"
-    region                 = "${var.region}"
-    slash_command          = "${var.slash_command}"
-    verification_token     = "${var.verification_token}"
-    web_api_token          = "${var.web_api_token}"
-  }
-}
-
 // Event Consumer archive
 data "archive_file" "event_consumer" {
   type        = "zip"
-  output_path = "${path.module}/dist/${var.event_consumer_function_name}.zip"
+  output_path = "${path.module}/dist/event-consumer.zip"
 
   source {
     content  = "${file("${path.module}/src/event-consumer/index.js")}"
@@ -44,7 +27,7 @@ data "archive_file" "event_consumer" {
   }
 
   source {
-    content  = "${data.template_file.config.rendered}"
+    content  = "${var.config}"
     filename = "config.json"
   }
 
@@ -57,7 +40,7 @@ data "archive_file" "event_consumer" {
 // Event Publisher archive
 data "archive_file" "event_publisher" {
   type        = "zip"
-  output_path = "${path.module}/dist/${var.event_publisher_function_name}.zip"
+  output_path = "${path.module}/dist/event-publisher.zip"
 
   source {
     content  = "${file("${path.module}/src/event-publisher/index.js")}"
@@ -70,7 +53,7 @@ data "archive_file" "event_publisher" {
   }
 
   source {
-    content  = "${data.template_file.config.rendered}"
+    content  = "${var.config}"
     filename = "config.json"
   }
 
@@ -83,7 +66,7 @@ data "archive_file" "event_publisher" {
 // Redirect archive
 data "archive_file" "redirect" {
   type        = "zip"
-  output_path = "${path.module}/dist/${var.redirect_function_name}.zip"
+  output_path = "${path.module}/dist/redirect.zip"
 
   source {
     content  = "${file("${path.module}/src/redirect/index.js")}"
@@ -101,7 +84,7 @@ data "archive_file" "redirect" {
   }
 
   source {
-    content  = "${data.template_file.config.rendered}"
+    content  = "${var.config}"
     filename = "config.json"
   }
 
@@ -114,7 +97,7 @@ data "archive_file" "redirect" {
 // Redirect archive
 data "archive_file" "slash_command" {
   type        = "zip"
-  output_path = "${path.module}/dist/${var.slash_command_function_name}.zip"
+  output_path = "${path.module}/dist/slash-command.zip"
 
   source {
     content  = "${file("${path.module}/src/slash-command/index.js")}"
@@ -132,7 +115,7 @@ data "archive_file" "slash_command" {
   }
 
   source {
-    content  = "${data.template_file.config.rendered}"
+    content  = "${var.config}"
     filename = "config.json"
   }
 }
