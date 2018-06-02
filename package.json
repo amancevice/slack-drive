@@ -1,6 +1,6 @@
 {
   "name": "slack-drive",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "Sync Slack channels with Google Drive",
   "main": "index.js",
   "dependencies": {

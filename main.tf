@@ -6,10 +6,14 @@ provider "template" {
   version = "~> 1.0"
 }
 
+locals {
+  version = "0.5.0"
+}
+
 // Event Consumer archive
 data "archive_file" "event_consumer" {
   type        = "zip"
-  output_path = "${path.module}/dist/event-consumer.zip"
+  output_path = "${path.module}/dist/event-consumer-${local.version}.zip"
 
   source {
     content  = "${file("${path.module}/src/event-consumer/index.js")}"
@@ -40,7 +44,7 @@ data "archive_file" "event_consumer" {
 // Event Publisher archive
 data "archive_file" "event_publisher" {
   type        = "zip"
-  output_path = "${path.module}/dist/event-publisher.zip"
+  output_path = "${path.module}/dist/event-publisher-${local.version}.zip"
 
   source {
     content  = "${file("${path.module}/src/event-publisher/index.js")}"
@@ -66,7 +70,7 @@ data "archive_file" "event_publisher" {
 // Redirect archive
 data "archive_file" "redirect" {
   type        = "zip"
-  output_path = "${path.module}/dist/redirect.zip"
+  output_path = "${path.module}/dist/redirect-${local.version}.zip"
 
   source {
     content  = "${file("${path.module}/src/redirect/index.js")}"
@@ -97,7 +101,7 @@ data "archive_file" "redirect" {
 // Redirect archive
 data "archive_file" "slash_command" {
   type        = "zip"
-  output_path = "${path.module}/dist/slash-command.zip"
+  output_path = "${path.module}/dist/slash-command-${local.version}.zip"
 
   source {
     content  = "${file("${path.module}/src/slash-command/index.js")}"
