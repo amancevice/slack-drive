@@ -53,6 +53,23 @@ function logRequest(req) {
 }
 
 /**
+ * Validate request has channel & user query params.
+ *
+ * @param {object} req Cloud Function request context.
+ */
+function validateRequest(req) {
+  return new Promise((resolve, reject) => {
+    if (req.query.channel === undefined) {
+      reject(new Error('channel is a required query parameter'));
+    }
+    else if (req.query.user === undefined) {
+      reject(new Error('user is a required query parameter'));
+    }
+    resolve(req);
+  });
+}
+
+/**
  * Get Slack channel info.
  *
  * @param {object} req Cloud Function request context.
@@ -116,8 +133,12 @@ function getUser(req) {
  * @param {object} req Cloud Function request context.
  */
 function verifyRequest(req) {
-  if (channel.members.indexOf(user.id) < 0) throw new Error('User not permitted');
-  return req;
+  return new Promise((resolve, reject) => {
+    if (channel.members.indexOf(user.id) < 0) {
+      reject(new Error('User not permitted'));
+    }
+    resolve(req);
+  });
 }
 
 /**
@@ -265,6 +286,7 @@ exports.redirect = (req, res) => {
   // Send slash-command response
   Promise.resolve(req)
     .then(logRequest)
+    .then(validateRequest)
     .then(getChannel)
     .then(getUser)
     .then(verifyRequest)
