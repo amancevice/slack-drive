@@ -86,6 +86,9 @@ function publishEvent(req) {
         return req;
       });
   }
+
+  // Resolve request without publishing
+  return Promise.resolve(req);
 }
 
 /**
