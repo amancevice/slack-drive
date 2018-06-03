@@ -4,7 +4,7 @@ Share Google Docs by email using Slack channels and Google Drive.
 
 ## Overview
 
-![welcome](./docs/images/welcome.png)
+<img src="./docs/images/welcome.png" width=500></img>
 
 This application aims to provide Slack teams with a private folder in Google Drive for each channel in the workspace. Members of each channel are given access to the channel's folder using the email address associated with his/her Slack account. This function aims to reduce the use of to Google Docs' "_share by link_" feature because it is inherently insecure.
 
