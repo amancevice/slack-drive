@@ -61,6 +61,8 @@ A member leaving a channel receives a DM from the Slack bot indicating that thei
 
 Additionally, a logging message is posted to a (preferably private) channel for the Slack admins to monitor. This is also where any errors would be posted if something goes wrong in the workflow.
 
+_Note that you must invite the bot into the logging channel if you have set it to private._
+
 ##### Member Joined Channel
 
 ![welcome](./images/welcome.png)

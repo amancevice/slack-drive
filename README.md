@@ -30,15 +30,15 @@ Some assembly required...
 
 A Slack Bot is required to act as the interface between your infrastructure and Slack Users.
 
-View the [slack](https://github.com/amancevice/slack-drive/blob/master/docs/slack.md) docs for step-by-step instructions on configuring your Slack app.
+View the [docs](https://github.com/amancevice/slack-drive/blob/master/docs/slack.md) for step-by-step instructions on configuring your Slack app.
 
 ### Google Cloud
 
 _This section is under development..._
 
-Sign in & sign up for a [Google Cloud](https://cloud.google.com) account to start using Google's cloud infrastructure.
+Sign into [Google Cloud](https://cloud.google.com) to start using Google's cloud infrastructure.
 
-In order to access Google Cloud services you will need to create a **project** and a [service account](https://cloud.google.com/iam/docs/service-accounts) that has edit access for the project. Download its access keys in order to deploy the infrastructure.
+View the [docs](https://github.com/amancevice/slack-drive/blob/master/docs/cloud.md) for step-by-step instructions on configuring Google Cloud.
 
 ## Deployment
 
@@ -54,6 +54,7 @@ Unzip the archive and view the `README` file in it. It should instruct you to:
 2. Run `terraform init` to download the deployment modules.
 3. (Optional) Update config.tpl with any additional values.
 4. (Optional) Update variables in `terraform.tf` with the correct values.
-5. (Optional) Or, simply enter them on the command line in step 6.
-6. Run `terraform apply` to view, approve, and deploy the Slack Drive infrastructure.
-7. Take note of the output URLs to finish setting up your Slack App.
+5. Record required variables into `terraform.tfvars`.
+6. Or, simply enter them on the command line in step 7.
+7. Run `terraform apply` to view, approve, and deploy the Slack Drive infrastructure.
+8. Take note of the output URLs to finish setting up your Slack App.

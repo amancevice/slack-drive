@@ -2,6 +2,7 @@
 2. Run `terraform init` to download the deployment modules.
 3. (Optional) Update config.tpl with any additional values.
 4. (Optional) Update variables in `terraform.tf` with the correct values.
-5. (Optional) Or, simply enter them on the command line in step 6.
-6. Run `terraform apply` to view, approve, and deploy the Slack Drive infrastructure.
-7. Take note of the output URLs to finish setting up your Slack App.
+5. Record required variables into `terraform.tfvars`.
+6. Or, simply enter them on the command line in step 7.
+7. Run `terraform apply` to view, approve, and deploy the Slack Drive infrastructure.
+8. Take note of the output URLs to finish setting up your Slack App.
