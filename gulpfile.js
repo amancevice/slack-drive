@@ -64,6 +64,11 @@ gulp.task('emulator', gulp.series([
   'emulator-deploy'
 ]));
 
+// Run `npm install`
+gulp.task('npm-install', () => {
+  return exec('npm install');
+});
+
 // Build artifacts
 gulp.task('build', () => {
   return gulp.src([
@@ -95,4 +100,4 @@ gulp.task('travis', () => {
 });
 
 // Default
-gulp.task('default', gulp.series(['build', 'dist']));
+gulp.task('default', gulp.series(['npm-install', 'build', 'dist']));

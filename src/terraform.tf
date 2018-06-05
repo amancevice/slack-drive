@@ -6,15 +6,16 @@ provider "google" {
 }
 
 module "slack_drive_cloud" {
-  source             = "amancevice/slack-drive/google"
-  version            = "0.5.4"
-  bucket_name        = "${var.bucket_name}"
-  channel            = "${var.channel}"
-  config             = "${file("config.tpl")}"
-  project            = "${var.project}"
-  service_account    = "${var.service_account}"
-  verification_token = "${var.verification_token}"
-  web_api_token      = "${var.web_api_token}"
+  source              = "amancevice/slack-drive/google"
+  version             = "0.6.0"
+  slack_drive_version = "0.5.3"
+  bucket_name         = "${var.bucket_name}"
+  channel             = "${var.channel}"
+  config              = "${file("config.tpl")}"
+  project             = "${var.project}"
+  service_account     = "${var.service_account}"
+  verification_token  = "${var.verification_token}"
+  web_api_token       = "${var.web_api_token}"
 }
 
 variable "bucket_name" {
