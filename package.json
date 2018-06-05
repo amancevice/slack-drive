@@ -1,6 +1,6 @@
 {
   "name": "slack-drive",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "description": "Sync Slack channels with Google Drive",
   "main": "index.js",
   "dependencies": {
@@ -12,10 +12,6 @@
     "gulp": "^4.0.0",
     "gulp-file": "^0.4.0",
     "gulp-zip": "^4.1.0"
-  },
-  "scripts": {
-    "info": "echo 'Sync Slack channels with Google Drive'",
-    "build": "node build.js"
   },
   "repository": {
     "type": "git",

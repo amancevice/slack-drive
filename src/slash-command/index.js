@@ -133,7 +133,7 @@ function getResponse(req) {
  * @param {object} res Cloud Function response context.
  */
 function sendResponse(msg, res) {
-  console.log(JSON.stringify(msg))
+  console.log(JSON.stringify(msg));
   res.json(msg);
 }
 

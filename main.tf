@@ -7,7 +7,7 @@ provider "template" {
 }
 
 locals {
-  version = "0.5.2"
+  version = "0.5.5"
 }
 
 // Event Consumer archive
@@ -98,7 +98,7 @@ data "archive_file" "redirect" {
   }
 }
 
-// Redirect archive
+// Slash command archive
 data "archive_file" "slash_command" {
   type        = "zip"
   output_path = "${path.module}/dist/slash-command-${local.version}.zip"

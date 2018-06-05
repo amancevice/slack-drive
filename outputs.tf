@@ -1,3 +1,7 @@
+output "version" {
+  value = "${local.version}"
+}
+
 output "event_consumer_output_path" {
   value = "${data.archive_file.event_consumer.output_path}"
 }
