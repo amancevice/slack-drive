@@ -3,7 +3,7 @@ const config = require('./config.json');
 const messages = require('./messages.json');
 
 // Slack
-const { WebClient } = require('@slack/client');
+const { WebClient } = require('@slack/web-api');
 const slack = new WebClient(config.slack.web_api_token);
 
 // Google Drive
@@ -77,34 +77,16 @@ function validateRequest(req) {
 function getChannel(req) {
 
   // Get channel info from Slack
-  if (req.query.channel[0] === 'C') {
-    return slack.channels.info({channel: req.query.channel})
-      .then((res) => {
-        console.log(`CHANNEL #${res.channel.name}`);
-        channel = res.channel;
-        return req;
-      })
-      .catch((err) => {
-        console.error(JSON.stringify(err));
-        throw err;
-      });
-  }
-
-  // Get private channel info from Slack
-  else if (req.query.channel[0] === 'G') {
-    return slack.groups.info({channel: req.query.channel})
-      .then((res) => {
-        console.log(`CHANNEL #${res.group.name}`);
-        channel = res.group;
-        return req;
-      })
-      .catch((err) => {
-        console.error(JSON.stringify(err));
-        throw err;
-      });
-  }
-
-  throw new Error('Unknown channel_type');
+  return slack.conversations.info({channel: req.query.channel})
+    .then((res) => {
+      console.log(`CHANNEL #${res.channel.name}`);
+      channel = res.channel;
+      return req;
+    })
+    .catch((err) => {
+      console.error(JSON.stringify(err));
+      throw err;
+    });
 }
 
 /**
