@@ -3,6 +3,6 @@
   "dependencies": {
     "@slack/client": "^4.2.0",
     "firebase-admin": "^5.12.1",
-    "googleapis": "^29.0.0"
+    "googleapis": "^59.0.0"
   }
 }
