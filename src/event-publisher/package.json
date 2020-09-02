@@ -1,6 +1,6 @@
 {
   "name": "slack-drive-event-publisher",
   "dependencies": {
-    "googleapis": "^29.0.0"
+    "googleapis": "^59.0.0"
   }
 }
