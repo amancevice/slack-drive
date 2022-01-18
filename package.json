@@ -5,13 +5,13 @@
   "main": "index.js",
   "dependencies": {
     "@slack/web-api": "^5.11.0",
-    "firebase-admin": "^9.0.0",
+    "firebase-admin": "^10.0.1",
     "googleapis": "^58.0.0"
   },
   "devDependencies": {
     "gulp": "^4.0.2",
     "gulp-file": "^0.4.0",
-    "gulp-zip": "^5.0.2"
+    "gulp-zip": "^5.1.0"
   },
   "repository": {
     "type": "git",
